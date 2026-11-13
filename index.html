@@ -612,10 +612,10 @@
     cancelHold();
     $('#wish').classList.remove('on');
     songOn = false;
-    fade(A.piano, A.piano.volume, 0, 600);
-    later(()=>{ A.piano.pause(); }, 700);
-    $$('.flame').forEach((f,i)=>later(()=>f.classList.remove('on'), i*120));
-    later(()=>{ A.vox.currentTime = 0; A.vox.volume = 0.95; play(A.vox); }, 500);
+    fade(A.piano, A.piano.volume, 0, 240);
+    later(()=>{ A.piano.pause(); }, 300);
+    $$('.flame').forEach((f,i)=>later(()=>f.classList.remove('on'), i*85));
+    later(()=>{ A.vox.currentTime = 0; A.vox.volume = 0.95; play(A.vox); }, 90);
     // 人声 13 秒，必须放完才进落版；放完自动跳，兜底 14.2 秒
     A.vox.onended = ()=>{ go(ORDER.indexOf('s9')); };
     later(()=>{ if(ORDER[at] !== 's9') go(ORDER.indexOf('s9')); }, 14200);
