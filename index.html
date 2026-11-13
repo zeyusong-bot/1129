@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0709">
+<title>小王同学</title>
+<style>
+  :root{
+    --ink:#0a0709; --pink:#ff6fa5; --pink-lt:#ffd6e6; --cream:#f7eedd;
+    --txt:#f6eef2; --dim:#c9a8b8;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--ink);color:var(--txt);overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  #stage{position:fixed;inset:0;overflow:hidden;touch-action:manipulation}
+
+  section{position:absolute;inset:0;opacity:0;pointer-events:none;
+    transition:opacity .62s cubic-bezier(.22,.9,.3,1), transform .62s cubic-bezier(.22,.9,.3,1);
+    transform:translateY(2.2vh)}
+  section.on{opacity:1;transform:none;pointer-events:auto}
+  section.z{transform:translateY(-2.2vh)}
+
+  /* ---------- 密码门 ---------- */
+  #gate{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.4vh;padding:0 10vw}
+  #gate h1{font-size:3.6vh;font-weight:600;letter-spacing:.06em;margin:0;color:#f3e6ec;text-align:center}
+  #gate .field{width:100%;display:flex;flex-direction:column;align-items:center;gap:1.8vh}
+  #ans{width:100%;max-width:64vw;background:transparent;border:none;border-bottom:1px solid rgba(255,214,230,.28);
+    color:var(--pink-lt);font-size:3.1vh;text-align:center;padding:1.2vh 0;outline:none;
+    font-family:inherit;letter-spacing:.05em;caret-color:var(--pink)}
+  #ans::placeholder{color:rgba(255,214,230,.26);font-size:2.4vh}
+  #go{background:transparent;border:1px solid rgba(255,214,230,.30);color:#f0d3df;
+    font-family:inherit;font-size:2.2vh;padding:1.2vh 7vw;border-radius:99px;
+    letter-spacing:.3em;margin-top:.6vh}
+  #go:active{background:rgba(255,111,165,.16)}
+  #hint{min-height:3.2vh;font-size:2.2vh;color:rgba(255,214,230,.34);letter-spacing:.04em;
+    transition:color .4s ease;text-align:center}
+  #hint.warn{color:#ff9dc1}
+
+  /* ---------- 通用文字 ---------- */
+  .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+       justify-content:center;gap:2.4vh;padding:0 6vw;text-align:center}
+  .l1{font-size:3.5vh;font-weight:700;letter-spacing:.02em;margin:0}
+  .l2{font-size:2.42vh;line-height:1.8;color:var(--dim);margin:0}
+
+  /* ---------- 粉色标题卡 ---------- */
+  .card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+        padding-left:10vw;gap:2.6vh;background:var(--pink);overflow:hidden}
+  .card .echo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:22vh;font-weight:900;letter-spacing:.2em;color:rgba(10,7,9,.032);
+    white-space:nowrap;pointer-events:none;user-select:none}
+  .card .t1{font-size:4.3vh;font-weight:600;color:#1a0d13;letter-spacing:.06em}
+  .card .rule{width:30vw;height:2px;background:rgba(10,7,9,.85)}
+  .card .t2{font-size:min(10.2vh,19.5vw);font-weight:900;color:#0a0709;letter-spacing:.05em;
+    line-height:1;display:flex;gap:.01em}
+  .card .t2 span{display:inline-block}
+  .card .cnt{position:absolute;right:6vw;bottom:7vh;font-size:1.7vh;letter-spacing:.34em;
+    color:rgba(10,7,9,.55);font-weight:600}
+  .card.cream{background:#f4e6cf}
+  #s3 .t2{font-size:min(9.6vh,17vw)}
+
+  /* ---------- 开场 ---------- */
+  #s1{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:0 9vw}
+  #s1 p{font-size:3.0vh;line-height:1.9;margin:0;letter-spacing:.03em;opacity:0;
+        transform:translateY(12px);transition:opacity .9s ease,transform .9s ease}
+  #s1 p.in{opacity:1;transform:none}
+  #s1 .dim{color:#b98fa3}
+
+  /* ---------- 粉色格子 ---------- */
+  #s2{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4vh;padding:0 6vw}
+  #grid{display:grid;grid-template-columns:repeat(9,1fr);gap:1.1vw;width:100%}
+  #grid i{aspect-ratio:1;border-radius:.6vw;background:#ff6fa5;opacity:.14;transition:opacity .5s ease,transform .5s ease}
+  #grid i.lit{opacity:1;transform:scale(1.35);box-shadow:0 0 3vw rgba(255,111,165,.9)}
+
+  /* ---------- 奶茶 ---------- */
+  #s4{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:0 6vw}
+  #s4 img{max-width:78vw;max-height:46vh;display:block}
+  .pearl{position:absolute;width:1.5vh;height:1.5vh;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#6b4030,#2a150f);opacity:.9;
+    animation:hop 1.5s infinite ease-in-out}
+  @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.2vh)}}
+
+  /* ---------- 小素龙 ---------- */
+  #s5{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:0 6vw}
+  #s5 img{max-width:84vw;max-height:50vh;display:block;
+    filter:drop-shadow(0 0 8vh rgba(255,111,165,.2))}
+
+  /* ---------- 收束 ---------- */
+  #s6{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:0 10vw}
+  #s6 p{font-size:3.3vh;line-height:1.85;margin:0;letter-spacing:.05em;text-align:center}
+
+  /* ---------- 蛋糕 ---------- */
+  #s7{display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #cake{position:relative;width:58vw;height:26vh;transform:translateY(6vh);opacity:0;
+         transition:transform 1.6s cubic-bezier(.22,.9,.3,1),opacity 1.2s ease}
+  #cake.up{transform:none;opacity:1}
+  #cake .body{position:absolute;left:0;right:0;bottom:0;height:74%;
+    background:linear-gradient(#ffd0e2,#ff8fb7 62%,#e8629a);
+    border-radius:2.4vh 2.4vh 3.2vh 3.2vh;
+    box-shadow:inset 0 -2vh 4vh rgba(160,40,90,.28),0 2vh 6vh rgba(255,111,165,.22)}
+  #cake .top{position:absolute;left:-2.5%;right:-2.5%;top:20%;height:16%;
+    background:radial-gradient(ellipse at 50% 40%,#fffdf6,#f3e4cd);
+    border-radius:50%}
+  #cake .drip{position:absolute;left:2%;right:2%;top:28%;height:9%;
+    background:radial-gradient(ellipse at 50% 0%,#fffdf6,#f0dfc6);border-radius:50% 50% 45% 45%}
+  .candle{position:absolute;bottom:60%;width:1.5vh;height:9vh;border-radius:.4vh;
+    background:linear-gradient(90deg,#ffe9f2,#fff,#ffd3e4)}
+  .candle .wick{position:absolute;left:50%;top:-.5vh;width:1px;height:.6vh;background:#4a2a38;transform:translateX(-50%)}
+  .flame{position:absolute;left:50%;top:-3.4vh;width:1.5vh;height:3vh;transform:translateX(-50%) scale(.2);
+    border-radius:50% 50% 45% 45%;opacity:0;
+    background:radial-gradient(ellipse at 50% 72%,#fffbe0 0%,#ffd75e 42%,#ff8a1e 72%,rgba(255,110,0,0) 100%);
+    filter:blur(.3px);transition:opacity .5s ease,transform .5s ease;
+    box-shadow:0 0 3vh rgba(255,180,60,.75)}
+  .flame.on{opacity:1;transform:translateX(-50%) scale(1);animation:flick .28s infinite alternate}
+  @keyframes flick{from{transform:translateX(-50%) scale(1) rotate(-3deg)}to{transform:translateX(-50%) scale(1.08) rotate(3deg)}}
+  #s7 .cap{position:absolute;bottom:14vh;left:0;right:0;text-align:center;font-size:2.3vh;
+    color:#d9b6c6;opacity:0;transition:opacity .8s ease}
+  #s7 .cap.on{opacity:1}
+
+  /* ---------- 四字 ---------- */
+  #s8{display:flex;align-items:flex-start;justify-content:center;padding-top:12vh;gap:1.2vw}
+  #s8 b{font-size:min(11vh,21vw);font-weight:900;letter-spacing:.03em;color:#fff;
+    opacity:0;transform:translateY(2.4vh) scale(1.06);filter:blur(6px);
+    transition:opacity .6s ease,transform .6s cubic-bezier(.22,.9,.3,1),filter .6s ease;
+    text-shadow:0 0 6vh rgba(255,111,165,.55)}
+  #s8 b.on{opacity:1;transform:none;filter:none}
+
+  /* ---------- 落版 ---------- */
+  #s9{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2vh;padding:0 8vw}
+  #big{font-size:min(9.4vh,17vw);font-weight:900;letter-spacing:.10em;line-height:1.05;
+    text-align:center;color:#fff;text-shadow:0 0 8vh rgba(255,111,165,.5);margin:0;
+    white-space:nowrap;padding-left:.10em}
+  #s9 .who{font-size:3vh;color:var(--pink-lt);letter-spacing:.3em;margin:0}
+  #s9 .fin{font-size:2.3vh;color:#b98fa3;margin:0;letter-spacing:.08em}
+  #again{margin-top:3vh;background:rgba(255,111,165,.12);border:1px solid rgba(255,214,230,.46);
+    color:#ffd9e6;font-family:inherit;font-size:2.1vh;padding:1.3vh 6vw;border-radius:99px;
+    letter-spacing:.18em;opacity:0;transition:opacity .8s ease}
+  #again.on{opacity:1}
+  #egg{position:fixed;left:0;right:0;bottom:22vh;text-align:center;font-size:2.2vh;
+    color:#ff9dc1;opacity:0;transition:opacity .5s ease;pointer-events:none;z-index:20}
+  #egg.on{opacity:1}
+
+  /* ---------- HUD ---------- */
+  #dots{position:absolute;right:4.6vw;top:calc(3.4vh + env(safe-area-inset-top));
+    display:flex;gap:1.7vw;z-index:12;opacity:0;transition:opacity .5s ease}
+  #dots.on{opacity:1}
+  #dots i{width:1.1vh;height:1.1vh;border-radius:50%;background:rgba(255,255,255,.22);display:block;
+    transition:background .4s ease,box-shadow .4s ease}
+  #dots i.on{background:var(--pink);box-shadow:0 0 1.4vh rgba(255,111,165,.85)}
+  #tap{position:absolute;left:0;right:0;bottom:calc(3.4vh + env(safe-area-inset-bottom));
+    text-align:center;font-size:1.9vh;letter-spacing:.5em;color:rgba(255,255,255,.40);
+    opacity:0;transition:opacity .5s ease;z-index:12;pointer-events:none}
+  #tap.on{opacity:.95}
+  #bezel{position:absolute;inset:0;pointer-events:none;z-index:3;
+    background:radial-gradient(ellipse at 50% 46%,transparent 52%,rgba(0,0,0,.55) 100%)}
+  #ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:15;
+    background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,0) 70%);
+    opacity:0;transform:translate(-50%,-50%) scale(.2)}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 0 密码门 -->
+  <section id="gate" class="on">
+    <h1>今天是几月几号？</h1>
+    <div class="field">
+      <input id="ans" inputmode="numeric" autocomplete="off">
+      <button id="go">进 去</button>
+      <div id="hint">月份点日期，像 3.7 这样</div>
+    </div>
+  </section>
+
+  <!-- 1 开场 -->
+  <section id="s1">
+    <p>别人送礼物。</p>
+    <p>我写了个网页。</p>
+    <p class="dim">因为我想让它只属于小王同学一个人。</p>
+  </section>
+
+  <!-- 2 粉色标题卡 -->
+  <section id="s2" class="card">
+    <div class="echo">Pink</div>
+    <div class="t1">我研究了一下</div>
+    <div class="rule"></div>
+    <div class="t2"><span>粉</span><span>色</span></div>
+    <div class="cnt">0 2 / 0 7</div>
+  </section>
+
+  <!-- 3 粉色格子 -->
+  <section id="s3">
+    <div class="mid" style="gap:4vh;padding:0 6vw">
+      <div id="grid"></div>
+      <p class="l2">发现粉有两百多种。<br>我挑了最不像 Hello Kitty 的那种。</p>
+    </div>
+  </section>
+
+  <!-- 4 奶茶 -->
+  <section id="s4">
+    <div id="shakeWrap" style="position:relative">
+      <img src="assets/web/milktea.webp" alt="">
+    </div>
+    <p class="l1">我研究了一下奶茶。</p>
+    <p class="l2">珍珠是圆的，好动，<br>所以我让它一直在杯子里跳。</p>
+  </section>
+
+  <!-- 5 小素龙 -->
+  <section id="s5">
+    <img src="assets/web/s6.webp" alt="">
+    <p class="l1">我研究了一下小素龙。</p>
+    <p class="l2">……这个我研究失败了，<br>所以它现在有点像一颗粉色的土豆。</p>
+  </section>
+
+  <!-- 6 收束 -->
+  <section id="s6">
+    <p>但你喜欢什么，<br>这件事我没搞错。</p>
+  </section>
+
+  <!-- 7 端蛋糕 -->
+  <section id="s7">
+    <div id="cake">
+      <div class="body"></div>
+      <div class="drip"></div>
+      <div class="top"></div>
+      <div class="candle" style="left:24%"><div class="wick"></div><div class="flame"></div></div>
+      <div class="candle" style="left:41%"><div class="wick"></div><div class="flame"></div></div>
+      <div class="candle" style="left:58%"><div class="wick"></div><div class="flame"></div></div>
+      <div class="candle" style="left:75%"><div class="wick"></div><div class="flame"></div></div>
+    </div>
+    <div class="cap" id="cap7">许个愿</div>
+  </section>
+
+  <!-- 8 四字 -->
+  <section id="s8">
+    <b>生</b><b>日</b><b>快</b><b>乐</b>
+  </section>
+
+  <!-- 9 落版 -->
+  <section id="s9">
+    <div id="big">生日快乐</div>
+    <p class="who">小王同学</p>
+    <p class="fin">技术有限，心意没有。</p>
+    <button id="again">再看一遍</button>
+  </section>
+
+  <div id="dots"></div>
+  <div id="tap">轻 点 继 续</div>
+  <div id="bezel"></div>
+  <div id="ripple"></div>
+  <div id="egg">（小素龙：我已经很努力了）</div>
+</div>
+
+<script>
+(function(){
+  window.onerror = function(m, src, line){
+    document.title = 'ERR: ' + m;
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#300;color:#f9a;font:11px/1.5 monospace;padding:8px;white-space:pre-wrap';
+    d.textContent = m + '  @line ' + line;
+    document.body.appendChild(d);
+  };
+  // ====== 配置：她的生日（月 / 日）======
+  const BIRTH = { m: 11, d: 29 };
+  const TOTAL_STEPS = 7;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const stage = $('#stage'), dots = $('#dots'), tapcue = $('#tap');
+  const clamp01 = x => x<0?0:x>1?1:x;
+
+  // ====== 音乐 ======
+  const A = {
+    main:  new Audio('assets/audio/main_a.mp3'),
+    piano: new Audio('assets/audio/piano_hbd.mp3'),
+    vox:   new Audio('assets/audio/vox.mp3'),
+    end:   new Audio('assets/audio/main_b.mp3')
+  };
+  Object.values(A).forEach(a=>{ a.preload='auto'; });
+  A.main.volume = 0.9; A.piano.volume = 0.0; A.vox.volume = 0.95; A.end.volume = 0.0;
+  function play(el){ const p = el.play(); if(p&&p.catch) p.catch(()=>{}); }
+  function fade(el, from, to, ms){
+    const t0 = performance.now();
+    const step = t => {
+      const k = clamp01((t-t0)/ms);
+      el.volume = Math.max(0, Math.min(1, from + (to-from)*k));
+      if(k<1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // ====== 粉色格子 ======
+  (function buildGrid(){
+    const g = document.getElementById('grid');
+    if(!g) return;
+    for(let i=0;i<81;i++){ g.appendChild(document.createElement('i')); }
+  })();
+
+  // ====== 进度点 ======
+  for(let i=0;i<TOTAL_STEPS;i++){ const d=document.createElement('i'); if(i===0) d.className='on'; dots.appendChild(d); }
+  function setDots(n){ $$('#dots i').forEach((d,i)=>d.classList.toggle('on', i<=n)); }
+
+  // ====== 场景机 ======
+  const ORDER = ['gate','s1','s2','s3','s4','s5','s6','s7','s8','s9'];
+  let at = 0;          // 当前场景索引
+  let locked = true;   // 门上锁时不响应点击
+  let timers = [];
+  function clearTimers(){ timers.forEach(id=>clearTimeout(id)); timers=[]; }
+  function later(fn, ms){ const id=setTimeout(fn, ms); timers.push(id); return id; }
+
+  function show(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.add('on');
+    el.classList.remove('z');
+  }
+  function hide(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('on');
+    el.classList.add('z');
+  }
+  function go(idx){
+    const prev = ORDER[at], next = ORDER[idx];
+    // 进四字屏时，蛋糕要留在画面上（不清 s7）
+    if(prev!==next && !(next==='s8' && prev==='s7')) hide(prev);
+    at = idx;
+    show(next);
+    onEnter(next);
+  }
+
+  // ====== 每屏进入时做什么 ======
+  function onEnter(id){
+    clearTimers();
+    tapcue.classList.remove('on');
+    dots.classList.toggle('on', id!=='gate');
+
+    if(id==='gate'){ locked = true; setTimeout(()=>$('#ans').focus(), 600); return; }
+
+    if(id==='s1'){
+      locked = true;
+      var ps = $$('#s1 p');
+      ps.forEach((p,i)=>later(()=>p.classList.add('in'), 500 + i*1500));
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 4600);
+        }
+
+    if(id==='s2'){
+      locked = true;
+      var t2 = $$('#s2 .t2 span');
+      t2.forEach((s,i)=>{ s.style.opacity=0; s.style.transform='translateY(14px)';
+        later(()=>{ s.style.transition='opacity .6s ease, transform .6s cubic-bezier(.22,.9,.3,1)';
+                    s.style.opacity=1; s.style.transform='none'; }, 420 + i*180); });
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 1700);
+      setDots(1);
+    }
+
+    if(id==='s3'){
+      locked = true;
+      var cells = $$('#grid i');
+      cells.forEach(c=>c.classList.remove('lit'));
+      gridPaint(false);
+      later(function(){
+  window.onerror = function(m, src, line){
+    document.title = 'ERR: ' + m;
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#300;color:#f9a;font:11px/1.5 monospace;padding:8px;white-space:pre-wrap';
+    d.textContent = m + '  @line ' + line;
+    document.body.appendChild(d);
+  }; gridPaint(true); }, 1500);
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
+      setDots(1);
+    }
+
+    if(id==='s4'){
+      locked = true;
+      spawnPearls();
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
+      setDots(2);
+    }
+
+    if(id==='s5'){
+      locked = true;
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
+      setDots(3);
+    }
+
+    if(id==='s6'){
+      locked = true;
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
+      setDots(4);
+    }
+
+    if(id==='s7'){
+      // 6a 端蛋糕：无点击，8 秒后自动进 6b
+      locked = true;
+      tapcue.classList.remove('on');
+      var cake = $('#cake');
+      cake.classList.remove('up');
+      $$('.flame').forEach(f=>f.classList.remove('on'));
+      $('#cap7').classList.remove('on');
+      later(()=>cake.classList.add('up'), 260);
+      later(()=>$('#cap7').classList.add('on'), 2400);
+      setDots(5);
+      later(()=>advance(true), 7600);
+    }
+
+    if(id==='s8'){
+      // 6b：钢琴起，四字落在四个音上
+      blown = false;
+      locked = true;
+      tapcue.classList.remove('on');
+      A.piano.currentTime = 0;
+      A.piano.volume = 0.0;
+      play(A.piano);
+      fade(A.piano, 0, 0.95, 700);
+      // 蜡烛一根根点亮
+      $$('.candle').forEach((c,i)=>later(()=>c.querySelector('.flame').classList.add('on'), 150 + i*220));
+      // 生 日 快 乐 —— 钢琴实测起音 0.40 / 0.81 / 1.62 / 2.46
+      const ON = [0.40, 0.81, 1.62, 2.46];
+      const bs = $$('#s8 b');
+      bs.forEach((b,i)=>{ b.classList.remove('on'); later(()=>b.classList.add('on'), ON[i]*1000 + 120); });
+      setDots(6);
+      later(()=>advance(true), 9000);
+    }
+
+    if(id==='s8'){}
+
+    if(id==='s9'){
+      // 落版：先收起蛋糕和四字
+      hide('s7'); hide('s8');
+      locked = false;
+      tapcue.classList.remove('on');
+      A.end.currentTime = 0; A.end.volume = 0.0; play(A.end); fade(A.end, 0, 0.85, 1800);
+      later(()=>$('#again').classList.add('on'), 2200);
+      setDots(6);
+    }
+  }
+
+  // 6c：吹蜡烛（单独插在 s8 之后）
+  let blown = false;
+  function blowScene(){
+    if(blown) return;
+    blown = true;
+    clearTimers();
+    tapcue.classList.remove('on');
+    fade(A.piano, A.piano.volume, 0, 1500);
+    later(()=>{ A.piano.pause(); }, 1600);
+    $$('.flame').forEach((f,i)=>later(()=>f.classList.remove('on'), i*120));
+    later(()=>{ A.vox.currentTime=0; play(A.vox); }, 400);
+    later(()=>{ go(ORDER.indexOf('s9')); }, 4200);
+  }
+
+  // ====== 粉色格子：上色 / 点亮 ======
+  const GRID_PICK = 37;
+  function gridPaint(light){
+    const cells = $$('#grid i');
+    cells.forEach((c,i)=>{
+      c.style.background = 'hsl(' + (332 + (i % 13) * 1.4).toFixed(1) + ',86%,' + (56 + (i % 7) * 2.2).toFixed(1) + '%)';
+      c.style.opacity = (i===GRID_PICK && light) ? '1'
+                        : (0.15 + 0.07*Math.abs(Math.sin(i*1.7))).toFixed(2);
+    });
+    if(light) cells[GRID_PICK].classList.add('lit');
+    else cells[GRID_PICK].classList.remove('lit');
+  }
+
+  // ====== 奶茶珍珠 ======
+  function spawnPearls(){
+    const wrap = $('#shakeWrap');
+    wrap.querySelectorAll('.pearl').forEach(p=>p.remove());
+    const spots = [[44,62],[52,70],[60,58],[48,78],[56,84]];
+    spots.forEach((s,i)=>{
+      const d = document.createElement('div');
+      d.className='pearl';
+      d.style.left = s[0]+'%'; d.style.top = s[1]+'%';
+      d.style.animationDelay = (i*0.18)+'s';
+      d.style.animationDuration = (1.3 + i*0.12)+'s';
+      wrap.appendChild(d);
+    });
+  }
+
+  // ====== 推进 ======
+  function advance(auto){
+    if(!auto && locked) return;
+    const cur = ORDER[at];
+    if(cur==='s8'){ blowScene(); return; }
+    const idx = ORDER.indexOf(cur);
+    if(idx < 0) return;
+    if(cur==='s9') return;
+    go(idx+1);
+  }
+
+  // ====== 点击 ======
+  function ripple(x,y){
+    const r = $('#ripple');
+    r.style.left=x+'px'; r.style.top=y+'px';
+    r.style.width='16vmin'; r.style.height='16vmin';
+    r.style.opacity='1';
+    r.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:.8},
+               {transform:'translate(-50%,-50%) scale(1)',opacity:0}],
+              {duration:520,easing:'cubic-bezier(.22,.9,.3,1)'});
+  }
+  stage.addEventListener('pointerdown', e=>{
+    if(at===0 && !locked) {} // 门自己处理
+    if(e.target.closest('#ans') || e.target.closest('#again')) return;
+    ripple(e.clientX, e.clientY);
+    if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){} }
+    advance(false);
+  });
+
+  // ====== 密码门 ======
+  function norm(s){
+    return s.replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0)-65248));
+  }
+  function parseMD(raw){
+    const s = norm(raw).trim();
+    if(!s) return null;
+    // 去掉年份
+    let digits = s.replace(/[^0-9]/g,'');
+    if(digits.length>=8){ digits = digits.slice(4); }
+    if(digits.length===4){ return { m:+digits.slice(0,2), d:+digits.slice(2) }; }
+    if(digits.length===3){ return { m:+digits[0], d:+digits.slice(1) }; }
+    const nums = (s.match(/\d+/g)||[]).map(Number);
+    if(nums.length>=3){ return { m: nums[1], d: nums[2] }; }
+    if(nums.length===2){ return { m: nums[0], d: nums[1] }; }
+    return null;
+  }
+  let tries = 0;
+  const hint = $('#hint');
+  function say(t){ hint.textContent = t; hint.classList.toggle('warn', !!t); }
+
+  function unlock(){
+    locked = true;
+    const gate = $('#gate');
+    gate.querySelector('h1').textContent = '对，今天是。';
+    $('#ans').style.display='none';
+    say('');
+    // 第一次手势已经发生 → 可以播音乐
+    A.main.currentTime = 0; A.main.volume = 0.85; play(A.main);
+    later(()=>{ go(ORDER.indexOf('s1')); }, 1700);
+  }
+
+  function tryUnlock(){
+    const got = parseMD($('#ans').value);
+    if(got && ((got.m===BIRTH.m && got.d===BIRTH.d) || (got.m===BIRTH.d && got.d===BIRTH.m))){ unlock(); return; }
+    tries++;
+    if(tries===1) say('不对，是你生日那天。');
+    else if(tries===2) say('提示：每年都要过的那天。');
+    else { say('算了，进来吧。'); later(unlock, 900); }
+  }
+  $('#ans').addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+  $('#go').addEventListener('click', tryUnlock);
+
+  // ====== 彩蛋：连点大字三下 ======
+  let taps=0, tapTimer=null;
+  $('#big').addEventListener('pointerdown', ()=>{
+    taps++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(()=>taps=0, 900);
+    if(taps>=3){ $('#egg').classList.add('on'); taps=0;
+      setTimeout(()=>$('#egg').classList.remove('on'), 2600); }
+  });
+
+  // 6c 的手指划过吹灭
+  stage.addEventListener('pointermove', e=>{
+    if(ORDER[at]!=='s8') return;
+    if(!$$('.flame.on').length) return;
+    blowScene();
+  }, {passive:true});
+
+  // ====== 再看一遍 ======
+  $('#again').addEventListener('click', ()=>{
+    clearTimers();
+    Object.values(A).forEach(a=>{ a.pause(); a.currentTime=0; });
+    $('#egg').classList.remove('on');
+    $('#again').classList.remove('on');
+    $('#cake').classList.remove('up');
+    $$('.flame').forEach(f=>f.classList.remove('on'));
+    $$('#s8 b').forEach(b=>b.classList.remove('on'));
+    $$('#s1 p').forEach(p=>p.classList.remove('in'));
+    hide(ORDER[at]); at=0; show('gate');
+    $('#ans').style.display='';
+    $('#ans').value=''; tries=0; say('');
+    $('#gate').querySelector('h1').textContent='今天是几月几号？';
+    locked = true;
+    // ====== 自测：?auto=1 自动走完全片（不点，用来看有没有卡死）======
+  if(new URLSearchParams(location.search).get('auto')){
+    setTimeout(()=>{ go(ORDER.indexOf('s1')); }, 300);
+    let step = 0;
+    const timer = setInterval(()=>{
+      step++;
+      document.title = 'AT=' + ORDER[at] + ' step=' + step;
+      if(ORDER[at]==='s9'){ clearInterval(timer); return; }
+      advance(true);
+    }, 1600);
+  }
+
+  setDots(0);
+    dots.classList.remove('on');
+    setTimeout(()=>$('#ans').focus(), 400);
+  });
+
+  // ====== 静音兜底：iOS 需要用户手势 ======
+  document.addEventListener('touchstart', function once(){
+    document.removeEventListener('touchstart', once);
+  }, {passive:true});
+
+  // ====== 调试：?scene=s7 直接跳到某屏（截图用）======
+  const dbg = new URLSearchParams(location.search).get('scene');
+  if(dbg && ORDER.indexOf(dbg)>=0){
+    document.getElementById('gate').classList.remove('on');
+    at = ORDER.indexOf(dbg);
+    show(dbg); onEnter(dbg);
+    if(dbg==='s3'){ gridPaint(true); }
+    if(dbg==='s7'){ setTimeout(()=>$('#cake').classList.add('up'), 60); }
+    if(dbg==='s8'){
+      show('s7'); $('#cake').classList.add('up');
+      setTimeout(()=>{ $$('.flame').forEach(f=>f.classList.add('on'));
+                       $$('#s8 b').forEach(b=>b.classList.add('on')); }, 80);
+    }
+  }
+
+  // ====== 自测：?auto=1 自动走完全片（不点，用来看有没有卡死）======
+  if(new URLSearchParams(location.search).get('auto')){
+    setTimeout(()=>{ go(ORDER.indexOf('s1')); }, 300);
+    let step = 0;
+    const timer = setInterval(()=>{
+      step++;
+      document.title = 'AT=' + ORDER[at] + ' step=' + step;
+      if(ORDER[at]==='s9'){ clearInterval(timer); return; }
+      advance(true);
+    }, 1600);
+  }
+
+  // ====== 自测：?auto=1 自动走完全片 ======
+  if(new URLSearchParams(location.search).get('auto')){
+    setTimeout(function(){ go(ORDER.indexOf('s1')); }, 300);
+    var step = 0;
+    var timer = setInterval(function(){
+      step++;
+      document.title = 'AT=' + ORDER[at] + ' step=' + step;
+      if(ORDER[at]==='s9'){ clearInterval(timer); return; }
+      advance(true);
+    }, 1600);
+  }
+
+  setDots(0);
+})();
+</script>
+</body>
+</html>
