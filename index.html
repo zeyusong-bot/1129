@@ -64,7 +64,7 @@
   .l1{font-size:3.5vh;font-weight:700;letter-spacing:.02em;margin:0}
   /* 逐字出场 */
   .ch{display:inline-block;opacity:0;will-change:transform,opacity;
-      animation:chIn .52s cubic-bezier(.2,.85,.3,1) forwards}
+      animation:chIn .62s cubic-bezier(.2,.85,.3,1) forwards}
   @keyframes chIn{from{opacity:0;transform:translateY(.5em) scale(.96)}
                   to{opacity:1;transform:none}}
   .tp{opacity:1!important;transform:none!important;transition:none!important}
@@ -235,7 +235,7 @@
   <section id="s5">
     <img src="assets/web/s6.webp" alt="">
     <p class="l1">我研究了一下小素龙。</p>
-    <p class="l2">……这个我研究失败了，<br>所以它现在有点像一颗粉色的土豆。</p>
+    <p class="l2">现在变成了<br>一个不能动的粉色小土豆。</p>
   </section>
 
   <!-- 6 收束 -->
@@ -394,7 +394,7 @@
       var q = $('#gate h1');
       q.classList.remove('ok');
       if(q.dataset.html === ''){ q.dataset.html = undefined; }
-      typeIn(q, 0.55, 0.085);
+      typeIn(q, 0.60, 0.115);
       setTimeout(()=>$('#ans').focus(), 900);
       return;
     }
@@ -402,14 +402,14 @@
     if(id==='s1'){
       locked = true;
       var ps = $$('#s1 p');
-      const S1T = [0.40, 1.75, 3.10];
-      ps.forEach((p,i)=>later(function(){ p.classList.add('in'); typeIn(p, 0, 0.085); }, S1T[i]*1000));
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 5600);
+      const S1T = [0.55, 2.35, 4.20];
+      ps.forEach((p,i)=>later(function(){ p.classList.add('in'); typeIn(p, 0, 0.125); }, S1T[i]*1000));
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 7600);
     }
 
     if(id==='s2'){
       locked = true;
-      typeIn($('#s2 .t1'), 0.40, 0.078);
+      typeIn($('#s2 .t1'), 0.45, 0.115);
       var t2 = $$('#s2 .t2 span');
       t2.forEach((s,i)=>{ s.style.opacity=0; s.style.transform='translateY(14px)';
         later(()=>{ s.style.transition='opacity .6s ease, transform .6s cubic-bezier(.22,.9,.3,1)';
@@ -424,7 +424,7 @@
       cells.forEach(c=>c.classList.remove('lit'));
       gridPaint(false);
       later(()=>gridPaint(true), 1500);
-      typeIn($('#s3 .l2'), 1.05, 0.055);
+      typeIn($('#s3 .l2'), 1.15, 0.082);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
       setDots(1);
     }
@@ -432,23 +432,23 @@
     if(id==='s4'){
       locked = true;
       spawnPearls();
-      typeIn($('#s4 .l1'), 0.45, 0.080);
-      typeIn($('#s4 .l2'), 1.45, 0.052);
+      typeIn($('#s4 .l1'), 0.50, 0.118);
+      typeIn($('#s4 .l2'), 1.85, 0.076);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
       setDots(2);
     }
 
     if(id==='s5'){
       locked = true;
-      typeIn($('#s5 .l1'), 0.45, 0.080);
-      typeIn($('#s5 .l2'), 1.45, 0.052);
+      typeIn($('#s5 .l1'), 0.50, 0.118);
+      typeIn($('#s5 .l2'), 1.95, 0.085);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
       setDots(3);
     }
 
     if(id==='s6'){
       locked = true;
-      typeIn($('#s6 p'), 0.50, 0.090);
+      typeIn($('#s6 p'), 0.55, 0.130);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
       setDots(4);
     }
@@ -465,7 +465,7 @@
       $$('.flame').forEach(f=>f.classList.remove('on'));
       $('#cap7').classList.remove('on');
       later(()=>cake.classList.add('up'), 260);
-      later(function(){ $('#cap7').classList.add('on'); typeIn($('#cap7'), 0, 0.17); }, 2400);
+      later(function(){ $('#cap7').classList.add('on'); typeIn($('#cap7'), 0, 0.26); }, 2400);
       setDots(5);
       later(()=>advance(true), 7600);
     }
@@ -498,8 +498,8 @@
       tapcue.classList.remove('on');
       A.main.pause(); A.piano.pause(); A.vox.pause();
       A.end.currentTime = 0; A.end.volume = 0.0; play(A.end); fade(A.end, 0, 0.85, 1800);
-      typeIn($('#s9 .who'), 0.45, 0.15);
-      typeIn($('#s9 .fin'), 1.35, 0.075);
+      typeIn($('#s9 .who'), 0.50, 0.21);
+      typeIn($('#s9 .fin'), 1.90, 0.105);
       later(()=>{ const b=$('#again'); b.classList.add('on'); b.style.opacity='1'; }, 2600);
       setDots(6);
     }
@@ -608,7 +608,7 @@
     h1.classList.add('ok');
     h1.dataset.html = '';
     h1.innerHTML = '答对啦，<br>但今天好像不太一样';
-    typeIn(h1, 0.05, 0.10);
+    typeIn(h1, 0.08, 0.135);
     $('#ans').style.display='none';
     const field = gate.querySelector('.field');
     if(field){ field.style.display='none'; }
