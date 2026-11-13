@@ -246,6 +246,17 @@
   #ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:15;
     background:radial-gradient(circle,rgba(255,255,255,.5),rgba(255,255,255,0) 70%);
     opacity:0;transform:translate(-50%,-50%) scale(.2)}
+
+  /* 蛋糕插画 */
+  #s8{justify-content:center;gap:2.6vh}
+  .cakeWrap{position:relative;width:78vw;max-width:520px;margin:0 auto}
+  .cakeWrap .cake{display:block;width:100%;height:auto;
+    filter:drop-shadow(0 2.4vh 3.6vh rgba(0,0,0,.62))}
+  .cakeWrap .fl{position:absolute;height:auto;opacity:0;pointer-events:none;
+    transform:scale(.86);transform-origin:50% 100%;
+    transition:opacity .55s ease,transform .55s ease;
+    filter:drop-shadow(0 0 1.4vh rgba(255,198,96,.9))}
+  .cakeWrap .fl.on{opacity:1;transform:scale(1)}
 </style>
 </head>
 <body>
@@ -317,18 +328,11 @@
     <!-- 7 端蛋糕 -->
   <!-- 8 点蜡烛：她点一根，亮一根，出来一个字 -->
   <section id="s8">
-    <img class="bgdragon" src="assets/web/s5.webp" alt="">
     <div class="chars"><b>生</b><b>日</b><b>快</b><b>乐</b></div>
-    <div class="cakeBox">
-      <div class="plate"></div>
-      <div class="body"></div>
-      <div class="top"></div>
-      <div class="drip"></div>
-      <div class="drops"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="candle" data-i="0" style="left:17%"><div class="wick"></div><div class="flame"></div></div>
-      <div class="candle" data-i="1" style="left:39%"><div class="wick"></div><div class="flame"></div></div>
-      <div class="candle" data-i="2" style="left:61%"><div class="wick"></div><div class="flame"></div></div>
-      <div class="candle" data-i="3" style="left:83%"><div class="wick"></div><div class="flame"></div></div>
+    <div class="cakeWrap" id="cakeWrap">
+      <img class="cake" src="assets/web/cake.png" alt="">
+      <img class="fl f1" id="fl1" src="assets/web/flame1.png" alt="" style="left:46.05%;top:-2.31%;width:5.15%">
+      <img class="fl f2" id="fl2" src="assets/web/flame2.png" alt="" style="left:59.47%;top:-3.42%;width:6.07%">
     </div>
     <div id="wish"><i></i></div>
   </section>
@@ -570,14 +574,13 @@ const MAIN_START = 2.0;
     }
 
     if(id==='s8'){
-      // 6b：素龙端着（虚化），蛋糕升起；四根蜡烛她自己点，一笔一笔把"生日快乐"点出来
+      // 蛋糕升起；两根数字蜡烛她自己点，每点一根落两个字、响两个音
       blown = false;
       locked = true;
       lit = 0;
       songOn = false;
       tapcue.classList.remove('on');
-      $$('#s8 .flame').forEach(f=>f.classList.remove('on'));
-      $$('#s8 .candle').forEach(c=>c.classList.remove('lit'));
+      $$('#s8 .fl').forEach(f=>f.classList.remove('on'));
       $$('#s8 .chars b').forEach(b=>b.classList.remove('on'));
       $('#wish').classList.remove('on');
       $('#wish i').style.transition = 'none';
@@ -587,7 +590,7 @@ const MAIN_START = 2.0;
       later(()=>{ if(ORDER[at]==='s8') cue('点 蜡 烛'); }, 1500);
       setDots(5);
       // 她一直不点：28 秒后自己点完，别卡死
-      later(()=>{ if(ORDER[at]==='s8' && lit < 4){ lightAll(); } }, 28000);
+      later(()=>{ if(ORDER[at]==='s8' && lit < 2){ lightAll(); } }, 20000);
     }
 
     if(id==='s9'){
@@ -765,20 +768,23 @@ const MAIN_START = 2.0;
     }catch(_){}
   }
 
-  function lightCandle(el){
-    if(!el || el.classList.contains('lit')) return;
-    const i = parseInt(el.dataset.i, 10);
-    el.classList.add('lit');
-    const fl = el.querySelector('.flame');
-    if(fl) fl.classList.add('on');
-    const b = $$('#s8 .chars b')[i];
-    if(b) b.classList.add('on');
-    noteAt(i);
+  const FLAME_CHARS = [[0,1],[2,3]];   // 第一根 -> 生 日，第二根 -> 快 乐
+  function lightFlame(n){
+    if(n < 0 || n > 1) return false;
+    const fl = $('#fl' + (n + 1));
+    if(!fl || fl.classList.contains('on')) return false;
+    fl.classList.add('on');
+    FLAME_CHARS[n].forEach((ci, k) => {
+      const b = $$('#s8 .chars b')[ci];
+      if(b) later(()=>b.classList.add('on'), k * 190);
+    });
+    FLAME_CHARS[n].forEach((ni, k) => later(()=>noteAt(ni), k * 220));
     lit++;
-    if(lit >= 4) startSong();
+    if(lit >= 2) startSong();
+    return true;
   }
 
-  function lightAll(){ $$('#s8 .candle').forEach(el=>lightCandle(el)); }
+  function lightAll(){ lightFlame(0); lightFlame(1); }
 
   function startSong(){
     if(songOn) return;
@@ -791,7 +797,7 @@ const MAIN_START = 2.0;
 
   let holdTimer = null, holding = false;
   function startHold(){
-    if(holding || lit < 4) return;
+    if(holding || lit < 2) return;
     holding = true;
     const bar = $('#wish i');
     bar.style.transition = 'width 1.5s linear';
@@ -830,15 +836,14 @@ const MAIN_START = 2.0;
   stage.addEventListener('pointerdown', e=>{
     if(e.target.closest('#ans') || e.target.closest('#again')) return;
     if(ORDER[at]==='s8'){
-      const cd = e.target.closest('#s8 .candle');
-      if(cd && lit < 4){
-        ripple(e.clientX, e.clientY);
-        if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){} }
-        lightCandle(cd);
+      if(lit < 2){
+        if(lightFlame(lit)){
+          ripple(e.clientX, e.clientY);
+          if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){} }
+        }
         return;
       }
-      if(lit >= 4){ startHold(); return; }
-      return;
+      startHold(); return;
     }
     ripple(e.clientX, e.clientY);
     if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){} }
@@ -950,7 +955,7 @@ const MAIN_START = 2.0;
     if(dbg==='s3'){ gridPaint(true); }
     if(dbg==='s8'){
       const n = parseInt(new URLSearchParams(location.search).get('lit') || '0', 10);
-      if(n > 0){ for(var k=0;k<Math.min(n,4);k++){ lightCandle($$('#s8 .candle')[k]); } }
+      if(n > 0){ for(var k=0;k<Math.min(n,2);k++){ lightFlame(k); } }
     }
   }
 
