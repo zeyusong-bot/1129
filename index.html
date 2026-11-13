@@ -41,6 +41,48 @@
     -webkit-tap-highlight-color:transparent;overscroll-behavior:none}
   html,body{overscroll-behavior:none}
 
+  /* ---------- 背景层（新增，未改动任何原有 section） ---------- */
+  #bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+    background:linear-gradient(168deg,#0d080e 0%,#0a0709 38%,#0b0810 72%,#0d0911 100%)}
+  #bg i{position:absolute;display:block;border-radius:50%;pointer-events:none;transition:opacity 2.2s ease}
+  #bg .fog{inset:-10%;border-radius:0;
+    background:
+      radial-gradient(58% 44% at 28% 18%,rgba(186,116,166,.075),rgba(186,116,166,0) 72%),
+      radial-gradient(54% 40% at 76% 86%,rgba(150,104,196,.075),rgba(150,104,196,0) 72%);
+    animation:drift2 96s ease-in-out infinite alternate}
+  #bg .g1{left:-25%;top:-30%;width:110vmax;height:110vmax;
+    background:radial-gradient(circle at 50% 50%,rgba(255,111,165,.16),rgba(255,111,165,.05) 42%,rgba(255,111,165,0) 70%);
+    animation:drift1 54s ease-in-out infinite alternate}
+  #bg .g2{right:-30%;bottom:-35%;width:105vmax;height:105vmax;
+    background:radial-gradient(circle at 50% 50%,rgba(126,96,255,.13),rgba(126,96,255,.04) 44%,rgba(126,96,255,0) 72%);
+    animation:drift2 72s ease-in-out infinite alternate}
+  #bg .g3{left:-15%;bottom:-45%;width:120vmax;height:120vmax;
+    background:radial-gradient(circle at 50% 50%,rgba(255,140,175,.12),rgba(255,140,175,.035) 45%,rgba(255,140,175,0) 72%);
+    animation:drift3 64s ease-in-out infinite alternate}
+  #bg .gw{left:-15%;right:-15%;bottom:-6%;height:74vh;border-radius:50% 50% 0 0;
+    background:radial-gradient(ellipse 62% 100% at 50% 100%,rgba(255,142,132,.46),rgba(255,110,140,.16) 58%,rgba(255,100,140,0) 84%);
+    animation:drift3 40s ease-in-out infinite alternate}
+  #bg .vig{inset:0;border-radius:0;
+    background:radial-gradient(ellipse 78% 62% at 50% 48%,rgba(0,0,0,0) 40%,rgba(0,0,0,.34) 78%,rgba(0,0,0,.62) 100%)}
+  #bg .grain{inset:-25%;border-radius:0;opacity:.075;
+    background-image:url('assets/web/grain.png');background-size:160px 160px;background-repeat:repeat;
+    animation:grainmove 4.6s steps(4) infinite}
+  #bg #mt{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+  @keyframes drift1{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(6%,4%,0) scale(1.08)}}
+  @keyframes drift2{0%{transform:translate3d(0,0,0) scale(1.05)}100%{transform:translate3d(-5%,-6%,0) scale(1)}}
+  @keyframes drift3{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(-4%,-3%,0) scale(1.1)}}
+  @keyframes grainmove{0%{transform:translate3d(0,0,0)}20%{transform:translate3d(-6px,4px,0)}40%{transform:translate3d(5px,-5px,0)}60%{transform:translate3d(-4px,-3px,0)}80%{transform:translate3d(6px,5px,0)}100%{transform:translate3d(0,0,0)}}
+
+  /* 情绪档：只切透明度，2.2s 平滑过渡 */
+  #bg .g1{opacity:.68} #bg .g2{opacity:.45} #bg .g3{opacity:.62} #bg .gw{opacity:0} #bg .fog{opacity:1}
+  #bg[data-tone="open"]   .g1{opacity:.40} #bg[data-tone="open"]   .g2{opacity:.62} #bg[data-tone="open"]   .g3{opacity:.46}
+  #bg[data-tone="quiet"]  .g1{opacity:.16} #bg[data-tone="quiet"]  .g2{opacity:.14} #bg[data-tone="quiet"]  .g3{opacity:.18}
+  #bg[data-tone="quiet"]  .fog{opacity:.30}
+  #bg[data-tone="candle"] .g1{opacity:.42} #bg[data-tone="candle"] .g2{opacity:.20} #bg[data-tone="candle"] .g3{opacity:.55}
+  #bg[data-tone="candle"] .gw{opacity:.95} #bg[data-tone="candle"] .fog{opacity:.55}
+  #bg[data-tone="final"]  .g1{opacity:.88} #bg[data-tone="final"]  .g2{opacity:.30} #bg[data-tone="final"]  .g3{opacity:.78}
+  #bg[data-tone="final"]  .gw{opacity:.45} #bg[data-tone="final"]  .fog{opacity:1}
+
   section{position:absolute;inset:0;opacity:0;pointer-events:none;
     transition:opacity .62s cubic-bezier(.22,.9,.3,1), transform .62s cubic-bezier(.22,.9,.3,1);
     transform:translateY(2.2vh)}
@@ -282,6 +324,13 @@
 </head>
 <body>
 <div id="stage">
+
+  <!-- 背景层（新增；不改动任何原有 section 的代码与样式） -->
+  <div id="bg" data-tone="base" aria-hidden="true">
+    <i class="fog"></i><i class="g2"></i><i class="g1"></i><i class="g3"></i><i class="gw"></i>
+    <canvas id="mt"></canvas>
+    <i class="vig"></i><i class="grain"></i>
+  </div>
 
   <!-- 0 密码门 -->
   <section id="gate" class="on">
@@ -1024,6 +1073,250 @@ const MAIN_START = 2.0;
   }
 
   setDots(0);
+})();
+</script>
+
+<!-- 背景情绪跟随（新增脚本，不改动原有主逻辑） -->
+<script>
+(function(){
+  var bg = document.getElementById('bg');
+  if(!bg) return;
+  var MAP = {gate:'base', s1:'open', s2:'open', s3:'quiet', s4:'base', s5:'base',
+             s6:'base', s6b:'base', s7:'base', s8:'candle', s9:'final'};
+  var secs = document.querySelectorAll('#stage > section');
+  function sync(){
+    var on = null;
+    for(var i=0;i<secs.length;i++){ if(secs[i].classList.contains('on')) on = secs[i]; }
+    if(!on) return;
+    var t = MAP[on.id] || 'base';
+    if(bg.getAttribute('data-tone') !== t) bg.setAttribute('data-tone', t);
+  }
+  try{
+    var mo = new MutationObserver(sync);
+    for(var i=0;i<secs.length;i++) mo.observe(secs[i], {attributes:true, attributeFilter:['class']});
+  }catch(_){}
+  sync();
+})();
+</script>
+
+<!-- 彩色流星雨（新增脚本，不改动原有主逻辑） -->
+<script>
+(function(){
+  var cv = document.getElementById('mt');
+  if(!cv || !cv.getContext) return;
+  var reduce = false;
+  try{ reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(_){}
+
+  var ctx = cv.getContext('2d');
+  var W = 0, H = 0, DPR = 1;
+
+  // ---- 可调参数 ----
+  var P = {
+    rate: 13.0,         // 每秒流星数
+    max: 46,            // 同时在场上限
+    minSep: 0.18,       // 新流星与在场流星的最近间隔（占屏宽比例）
+    angle: 36,          // 从左上往右下的角度（度）
+    speedMin: 820, speedMax: 1560,
+    lenMin: 120, lenMax: 340,
+    alpha: 0.9,
+    trail: 0.62,        // 尾巴占整条长度的比例（越接近 1 尾巴越长）
+    sparkle: true
+  };
+
+  var COLORS = [
+    [255,111,165],   // 粉
+    [255,158,199],   // 浅粉
+    [192,140,255],   // 紫
+    [255,214,160],   // 奶黄
+    [127,227,255],   // 淡蓝
+    [255,255,255]    // 白（少量）
+  ];
+
+  // 头部光核预渲染成贴图（每种颜色一张），避免每帧创建径向渐变
+  var sprites = null;
+  function buildSprites(){
+    sprites = COLORS.map(function(c){
+      var S = 96, cc = document.createElement('canvas');
+      cc.width = S; cc.height = S;
+      var g2 = cc.getContext('2d');
+      var rg = g2.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+      rg.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0.95)');
+      rg.addColorStop(0.24, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0.34)');
+      rg.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+      g2.fillStyle = rg;
+      g2.fillRect(0, 0, S, S);
+      return cc;
+    });
+  }
+
+  function size(){
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = cv.clientWidth || window.innerWidth;
+    H = cv.clientHeight || window.innerHeight;
+    cv.width = Math.round(W * DPR);
+    cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  var list = [];
+  var acc = 0, last = 0, running = true;
+
+  // 低差异序列：让入场点沿「顶边 + 左边」这条折线均匀铺开，再加小抖动，避免聚堆也不像排格子
+  var seq = 0;
+  function pickEntry(){
+    var t = (seq * 0.6180339887498949) % 1;
+    seq++;
+    t = (t + (Math.random() - 0.5) * 0.028 + 1) % 1;
+    var x, y;
+    if(t < 0.62){
+      var u = t / 0.62;
+      x = -0.10 * W + u * 1.10 * W;
+      y = -0.12 * H - Math.random() * 0.06 * H;
+    }else{
+      var v = (t - 0.62) / 0.38;
+      x = -0.14 * W - Math.random() * 0.05 * W;
+      y = -0.02 * H + v * 0.70 * H;
+    }
+    return [x, y];
+  }
+
+  function farEnough(x, y){
+    var d = P.minSep * W;
+    for(var i = 0;i < list.length;i++){
+      var dx = list[i].x - x, dy = list[i].y - y;
+      if(dx * dx + dy * dy < d * d) return false;
+    }
+    return true;
+  }
+
+  function spawn(){
+    if(list.length >= P.max) return;
+    var a = (P.angle + (Math.random() - 0.5) * 10) * Math.PI / 180;
+    var dx = Math.cos(a), dy = Math.sin(a);
+    var sp = P.speedMin + Math.random() * (P.speedMax - P.speedMin);
+    var c = COLORS[(Math.random() * COLORS.length) | 0];
+    var ci = COLORS.indexOf(c);
+    if(c[0] === 255 && c[1] === 255 && Math.random() > 0.16){ c = COLORS[0]; ci = 0; }
+
+    var pt = pickEntry();
+    for(var tryN = 0;tryN < 5 && !farEnough(pt[0], pt[1]);tryN++){ pt = pickEntry(); }
+    var x = pt[0], y = pt[1];
+
+    var sparks = [];
+    if(P.sparkle){
+      var n = 2 + ((Math.random() * 4) | 0);
+      for(var i = 0;i < n;i++){
+        sparks.push({
+          off: 0.25 + Math.random() * 0.62,       // 尾巴上的位置
+          side: (Math.random() - 0.5) * 7,        // 垂直偏移
+          r: 0.5 + Math.random() * 0.9,
+          a: 0.35 + Math.random() * 0.5
+        });
+      }
+    }
+
+    list.push({
+      x: x, y: y, vx: dx * sp, vy: dy * sp,
+      len: P.lenMin + Math.random() * (P.lenMax - P.lenMin),
+      w: 0.9 + Math.random() * 1.6,
+      c: c, ci: ci, sparks: sparks
+    });
+  }
+
+  function step(dt){
+    // 生成
+    acc += dt * P.rate;
+    while(acc >= 1){ acc -= 1; spawn(); }
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+
+    for(var i = list.length - 1;i >= 0;i--){
+      var m = list[i];
+      m.x += m.vx * dt;
+      m.y += m.vy * dt;
+      if(m.x - m.len > W + 40 || m.y - m.len > H + 40){ list.splice(i, 1); continue; }
+
+      var hx = m.x, hy = m.y;
+      var ang = Math.atan2(m.vy, m.vx);
+      var ca = Math.cos(ang), sa = Math.sin(ang);
+      var tx = hx - ca * m.len;
+      var ty = hy - sa * m.len;
+
+      var c = m.c;
+      var g = ctx.createLinearGradient(tx, ty, hx, hy);
+      g.addColorStop(0, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0)');
+      g.addColorStop(0.45, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0.22)');
+      g.addColorStop(0.80, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',0.60)');
+      g.addColorStop(1, 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',1)');
+
+      ctx.strokeStyle = g;
+      ctx.lineCap = 'round';
+
+      // 三层叠出光晕：外晕 / 中层 / 亮芯
+      var layers = [[m.w * 6.2, 0.10], [m.w * 2.6, 0.30], [m.w, 0.92]];
+      for(var L = 0;L < layers.length;L++){
+        ctx.globalAlpha = P.alpha * layers[L][1];
+        ctx.lineWidth = layers[L][0];
+        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(hx, hy); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // 头部光核（用预渲染贴图，便宜）
+      var hr = m.w * 7;
+      var spr = sprites[m.ci];
+      if(spr){
+        ctx.globalAlpha = P.alpha;
+        ctx.drawImage(spr, hx - hr, hy - hr, hr * 2, hr * 2);
+      }
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.beginPath(); ctx.arc(hx, hy, m.w * 0.75, 0, 6.2832); ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // 尾部碎屑
+      for(var k = 0;k < m.sparks.length;k++){
+        var s = m.sparks[k];
+        var sx = hx - ca * m.len * s.off + (-sa) * s.side;
+        var sy = hy - sa * m.len * s.off + (ca) * s.side;
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + s.a.toFixed(2) + ')';
+        ctx.beginPath(); ctx.arc(sx, sy, s.r, 0, 6.2832); ctx.fill();
+      }
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  function loop(t){
+    if(!running) return;
+    if(!last) last = t;
+    var dt = (t - last) / 1000;
+    last = t;
+    if(dt > 0.08) dt = 0.08;     // 切后台回来别炸
+    step(dt);
+    requestAnimationFrame(loop);
+  }
+
+  buildSprites();
+  size();
+  // 先撒一批，避免开场空场
+  for(var i = 0;i < 10;i++){ spawn(); }
+
+  if(reduce){
+    // 尊重系统「减少动态效果」：只画一帧静态的
+    step(0.016);
+  }else{
+    requestAnimationFrame(loop);
+  }
+
+  var rt = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){ size(); if(reduce) step(0.016); }, 180);
+  });
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running = false; }
+    else if(!reduce){ running = true; last = 0; requestAnimationFrame(loop); }
+  });
 })();
 </script>
 </body>
