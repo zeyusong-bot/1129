@@ -1016,6 +1016,8 @@ const MAIN_START = 2.0;
     $$('#s1 p').forEach(p=>p.classList.remove('in'));
     hide(ORDER[at]); at=0; show('gate');
     $('#ans').style.display='';
+    const gf = $('#gate').querySelector('.field');
+    if(gf){ gf.style.display=''; }
     $('#ans').value=''; tries=0; say('');
     var gh=$('#gate').querySelector('h1'); gh.classList.remove('ok'); gh.dataset.html=''; gh.textContent='今天是几月几号？';
     locked = true;
