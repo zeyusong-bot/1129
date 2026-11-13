@@ -815,9 +815,14 @@ const MAIN_START = 2.0;
       const b = $$('#s8 .chars b')[ci];
       if(b) later(()=>b.classList.add('on'), k * 190);
     });
-    FLAME_CHARS[n].forEach((ni, k) => later(()=>noteAt(ni), k * 220));
     lit++;
-    if(lit >= 2) startSong();
+    if(lit === 1){
+      startSong();                       // 点一下就开始放生日快乐歌
+      later(()=>{ if(ORDER[at]==='s8') shint('再 点 一 下'); }, 700);
+    } else if(lit === 2){
+      $('#wish').classList.add('on');
+      shint('按 住 许 愿，别 松');
+    }
     return true;
   }
 
@@ -834,9 +839,7 @@ const MAIN_START = 2.0;
     if(songOn) return;
     songOn = true;
     tapcue.classList.remove('on');
-    try{ A.piano.currentTime = 2.86; A.piano.volume = 0; play(A.piano); fade(A.piano, 0, 0.95, 600); }catch(_){}
-    $('#wish').classList.add('on');
-    later(()=>{ if(ORDER[at]==='s8') shint('按 住 许 愿，别 松'); }, 600);
+    try{ A.piano.currentTime = 0; A.piano.volume = 0; play(A.piano); fade(A.piano, 0, 0.95, 600); }catch(_){}
   }
 
   let holdTimer = null, holding = false;
