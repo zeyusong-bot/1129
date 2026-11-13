@@ -44,6 +44,7 @@
   /* ---------- 密码门 ---------- */
   #gate{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.4vh;padding:0 10vw}
   #gate h1{font-size:3.6vh;font-weight:600;letter-spacing:.06em;margin:0;color:#f3e6ec;text-align:center}
+  #gate h1.ok{font-size:4.1vh;line-height:1.66;letter-spacing:.03em;color:#ffe2ee}
   #gate .field{width:100%;display:flex;flex-direction:column;align-items:center;gap:1.8vh}
   #ans{width:100%;max-width:64vw;background:transparent;border:none;border-bottom:1px solid rgba(255,214,230,.28);
     color:var(--pink-lt);font-size:3.1vh;text-align:center;padding:1.2vh 0;outline:none;
@@ -558,13 +559,17 @@
     unlocked = true;
     locked = true;
     const gate = $('#gate');
-    gate.querySelector('h1').textContent = '对，今天是。';
+    const h1 = gate.querySelector('h1');
+    h1.classList.add('ok');
+    h1.innerHTML = '答对啦，<br>但今天好像不太一样';
     $('#ans').style.display='none';
+    const field = gate.querySelector('.field');
+    if(field){ field.style.display='none'; }
     say('');
     // 第一次手势已经发生 → 可以播音乐
     A.piano.pause(); A.vox.pause(); A.end.pause();
     A.main.currentTime = 0; A.main.volume = 0.85; play(A.main);
-    later(()=>{ go(ORDER.indexOf('s1')); }, 1700);
+    later(()=>{ go(ORDER.indexOf('s1')); }, 2400);
   }
 
   function tryUnlock(){
@@ -608,7 +613,7 @@
     hide(ORDER[at]); at=0; show('gate');
     $('#ans').style.display='';
     $('#ans').value=''; tries=0; say('');
-    $('#gate').querySelector('h1').textContent='今天是几月几号？';
+    var gh=$('#gate').querySelector('h1'); gh.classList.remove('ok'); gh.textContent='今天是几月几号？';
     locked = true;
     // ====== 自测：?auto=1 自动走完全片（不点，用来看有没有卡死）======
   if(new URLSearchParams(location.search).get('auto')){
