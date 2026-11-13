@@ -202,7 +202,7 @@
   <section id="s1">
     <p>别人送礼物。</p>
     <p>我写了个网页。</p>
-    <p class="dim">因为我想让它只属于小王同学一个人。</p>
+    <p class="dim">因为我想让它<br>只属于小王同学一个人。</p>
   </section>
 
   <!-- 2 粉色标题卡 -->
@@ -375,12 +375,18 @@
       }
     });
   }
+  const CH_DUR = 0.62;   // 单个字的淡入时长，和 CSS 里 @keyframes chIn 保持一致
   function typeIn(el, base, step){
-    if(!el) return;
+    if(!el) return 0;
     if(el.dataset.html === undefined){ el.dataset.html = el.innerHTML; }
     else if(el.dataset.html !== ''){ el.innerHTML = el.dataset.html; }
     el.classList.add('tp');
-    splitChars(el, {i:0}, step == null ? 0.07 : step, base == null ? 0 : base);
+    const b  = (base == null ? 0 : base);
+    const st = (step == null ? 0.10 : step);
+    const c  = {i:0};
+    splitChars(el, c, st, b);
+    // 最后一个字的起始时刻 + 它自己的淡入时长
+    return b + Math.max(0, c.i - 1) * st + CH_DUR;
   }
 
   // ====== 每屏进入时做什么 ======
@@ -394,7 +400,7 @@
       var q = $('#gate h1');
       q.classList.remove('ok');
       if(q.dataset.html === ''){ q.dataset.html = undefined; }
-      typeIn(q, 0.60, 0.115);
+      typeIn(q, 0.65, 0.135);
       setTimeout(()=>$('#ans').focus(), 900);
       return;
     }
@@ -402,19 +408,24 @@
     if(id==='s1'){
       locked = true;
       var ps = $$('#s1 p');
-      const S1T = [0.55, 2.35, 4.20];
-      ps.forEach((p,i)=>later(function(){ p.classList.add('in'); typeIn(p, 0, 0.125); }, S1T[i]*1000));
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 7600);
+      const S1T = [0.60, 3.10, 5.60];
+      ps.forEach((p,i)=>later(function(){
+        p.classList.add('in');
+        var f = typeIn(p, 0, 0.185);
+        if(i === ps.length - 1){
+          later(()=>{ locked=false; tapcue.classList.add('on'); }, (f + 0.35) * 1000);
+        }
+      }, S1T[i]*1000));
     }
 
     if(id==='s2'){
       locked = true;
-      typeIn($('#s2 .t1'), 0.45, 0.115);
+      var f2a = typeIn($('#s2 .t1'), 0.50, 0.190);
       var t2 = $$('#s2 .t2 span');
       t2.forEach((s,i)=>{ s.style.opacity=0; s.style.transform='translateY(14px)';
         later(()=>{ s.style.transition='opacity .6s ease, transform .6s cubic-bezier(.22,.9,.3,1)';
                     s.style.opacity=1; s.style.transform='none'; }, 420 + i*180); });
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 1700);
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, Math.max(f2a, 1.40) * 1000 + 300);
       setDots(1);
     }
 
@@ -424,32 +435,32 @@
       cells.forEach(c=>c.classList.remove('lit'));
       gridPaint(false);
       later(()=>gridPaint(true), 1500);
-      typeIn($('#s3 .l2'), 1.15, 0.082);
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
+      var f3 = typeIn($('#s3 .l2'), 1.25, 0.130);
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, Math.max(f3, 1.9) * 1000 + 300);
       setDots(1);
     }
 
     if(id==='s4'){
       locked = true;
       spawnPearls();
-      typeIn($('#s4 .l1'), 0.50, 0.118);
-      typeIn($('#s4 .l2'), 1.85, 0.076);
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
+      var f4a = typeIn($('#s4 .l1'), 0.50, 0.185);
+      var f4b = typeIn($('#s4 .l2'), 2.00, 0.120);
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, Math.max(f4a, f4b) * 1000 + 300);
       setDots(2);
     }
 
     if(id==='s5'){
       locked = true;
-      typeIn($('#s5 .l1'), 0.50, 0.118);
-      typeIn($('#s5 .l2'), 1.95, 0.085);
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
+      var f5a = typeIn($('#s5 .l1'), 0.50, 0.185);
+      var f5b = typeIn($('#s5 .l2'), 2.10, 0.135);
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, Math.max(f5a, f5b) * 1000 + 300);
       setDots(3);
     }
 
     if(id==='s6'){
       locked = true;
-      typeIn($('#s6 p'), 0.55, 0.130);
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
+      var f6 = typeIn($('#s6 p'), 0.60, 0.165);
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, f6 * 1000 + 350);
       setDots(4);
     }
 
@@ -465,7 +476,7 @@
       $$('.flame').forEach(f=>f.classList.remove('on'));
       $('#cap7').classList.remove('on');
       later(()=>cake.classList.add('up'), 260);
-      later(function(){ $('#cap7').classList.add('on'); typeIn($('#cap7'), 0, 0.26); }, 2400);
+      later(function(){ $('#cap7').classList.add('on'); typeIn($('#cap7'), 0, 0.34); }, 2400);
       setDots(5);
       later(()=>advance(true), 7600);
     }
@@ -498,9 +509,9 @@
       tapcue.classList.remove('on');
       A.main.pause(); A.piano.pause(); A.vox.pause();
       A.end.currentTime = 0; A.end.volume = 0.0; play(A.end); fade(A.end, 0, 0.85, 1800);
-      typeIn($('#s9 .who'), 0.50, 0.21);
-      typeIn($('#s9 .fin'), 1.90, 0.105);
-      later(()=>{ const b=$('#again'); b.classList.add('on'); b.style.opacity='1'; }, 2600);
+      typeIn($('#s9 .who'), 0.55, 0.230);
+      var f9 = typeIn($('#s9 .fin'), 2.20, 0.140);
+      later(()=>{ const b=$('#again'); b.classList.add('on'); b.style.opacity='1'; }, f9 * 1000 + 500);
       setDots(6);
     }
   }
@@ -608,7 +619,7 @@
     h1.classList.add('ok');
     h1.dataset.html = '';
     h1.innerHTML = '答对啦，<br>但今天好像不太一样';
-    typeIn(h1, 0.08, 0.135);
+    typeIn(h1, 0.10, 0.150);
     $('#ans').style.display='none';
     const field = gate.querySelector('.field');
     if(field){ field.style.display='none'; }
