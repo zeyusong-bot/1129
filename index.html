@@ -590,12 +590,14 @@
   // ====== 素龙的篮子：一张一点 ======
   const POP_SPOT = [[21,18,-7],[63,11,5],[83,37,9],[18,56,-6],[61,65,6]];   // 整屏百分比
   const POP_LINE = [
-    '这个我发过，是我不对。',
-    '这个你说看了想洗手。',
-    '这个你说像你班主任。',
-    '这个你已读不回。',
-    '这个你回了三个点。'
+    '这个你说像在查你手机。',
+    '这个自带字，你说最没诚意。',
+    '这个你说像在给自己加戏。',
+    '这个你说像在嫌我。',
+    '这个你说像你二舅。'
   ];
+  const POP_SRC = ['assets/web/m1.webp','assets/web/m2.webp','assets/web/m3.webp',
+                   'assets/web/m4.webp','assets/web/m5.webp'];
   let pops = 0, lastTapAt = 0, basketBuilt = false;
 
   function buildBasket(){
@@ -606,7 +608,7 @@
       const d = document.createElement('div');
       d.className = 'pop';
       d.dataset.i = i;
-      d.innerHTML = '<div class="ph">?</div>';
+      d.innerHTML = '<img src="' + POP_SRC[i] + '" alt="">';
       host.appendChild(d);
     }
   }
