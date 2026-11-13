@@ -211,9 +211,12 @@
     transition:opacity .5s ease,transform .5s cubic-bezier(.22,.9,.3,1),filter .5s ease;
     text-shadow:0 0 5vh rgba(255,111,165,.5)}
   #s8 .chars b.on{opacity:1;transform:none;filter:none}
-  #wish{position:absolute;left:50%;bottom:15vh;transform:translateX(-50%);width:38vw;height:.55vh;
-    background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;opacity:0;
+  #wish{position:relative;left:auto;bottom:auto;transform:none;width:46vw;max-width:300px;height:.55vh;
+    margin:2.6vh auto 0;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;opacity:0;
     transition:opacity .5s ease;z-index:9}
+  #shint{position:relative;margin:1.7vh auto 0;font-size:2.05vh;letter-spacing:.3em;
+    color:rgba(255,255,255,.5);opacity:0;transition:opacity .5s ease;text-align:center;padding-left:.3em}
+  #shint.on{opacity:1}
   #wish.on{opacity:1}
   #wish i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff6fa5,#ffd6e6);
     border-radius:99px}
@@ -341,6 +344,7 @@
       <img class="fl f2" id="fl2" src="assets/web/flame2.webp" alt="" style="left:59.65%;top:-11.09%;width:6.12%">
     </div>
     <div id="wish"><i></i></div>
+    <div id="shint"></div>
   </section>
 
   <!-- 9 落版 -->
@@ -582,9 +586,11 @@ const MAIN_START = 2.0;
     if(id==='s8'){
       // 蛋糕升起；两根数字蜡烛她自己点，每点一根落两个字、响两个音
       blown = false;
+      endingOn = false;
       locked = true;
       lit = 0;
       songOn = false;
+      shintOff();
       tapcue.classList.remove('on');
       $$('#s8 .fl').forEach(f=>f.classList.remove('on'));
       $$('#s8 .chars b').forEach(b=>b.classList.remove('on'));
@@ -593,7 +599,7 @@ const MAIN_START = 2.0;
       $('#wish i').style.width = '0%';
       $('#s8').classList.remove('up');
       setTimeout(()=>$('#s8').classList.add('up'), 120);
-      later(()=>{ if(ORDER[at]==='s8') cue('点 蜡 烛'); }, 1500);
+      later(()=>{ if(ORDER[at]==='s8' && lit === 0) shint('点 一 下 蜡 烛'); }, 1200);
       setDots(5);
       // 她一直不点：28 秒后自己点完，别卡死
       later(()=>{ if(ORDER[at]==='s8' && lit < 2){ lightAll(); } }, 20000);
@@ -604,8 +610,11 @@ const MAIN_START = 2.0;
       hide('s7'); hide('s8');
       locked = false;
       tapcue.classList.remove('on');
-      A.main.pause(); A.piano.pause(); A.vox.pause();
-      A.end.currentTime = 0; A.end.volume = 0.0; play(A.end); fade(A.end, 0, 0.85, 1800);
+      A.main.pause(); A.vox.pause();
+      A.piano.pause();
+      if(!endingOn){
+        A.end.currentTime = 0; A.end.volume = 0.0; play(A.end); fade(A.end, 0, 0.85, 2200);
+      }
       typeIn($('#s9 .who'), 0.55, 0.230);
       var f9 = typeIn($('#s9 .fin'), 2.20, 0.140);
       later(()=>{ const b=$('#again'); b.classList.add('on'); b.style.opacity='1'; }, f9 * 1000 + 500);
@@ -615,6 +624,20 @@ const MAIN_START = 2.0;
 
   // 6c：吹蜡烛（单独插在 s8 之后）
   let blown = false;
+  let endingOn = false;
+  function startEnding(){
+    if(endingOn) return;
+    endingOn = true;
+    // 结尾曲先进来，钢琴在这 2 秒里退掉，视觉同时淡入落版
+    try{
+      A.end.currentTime = 0; A.end.volume = 0.0; play(A.end);
+      fade(A.end, 0, 0.85, 2800);
+      fade(A.piano, A.piano.volume, 0, 2000);
+      later(()=>{ try{ A.piano.pause(); }catch(_){} }, 2200);
+    }catch(_){}
+    go(ORDER.indexOf('s9'));
+  }
+
   function blowScene(){
     if(blown) return;
     blown = true;
@@ -623,13 +646,18 @@ const MAIN_START = 2.0;
     cancelHold();
     $('#wish').classList.remove('on');
     songOn = false;
-    fade(A.piano, A.piano.volume, 0, 240);
-    later(()=>{ A.piano.pause(); }, 300);
-    $$('.flame').forEach((f,i)=>later(()=>f.classList.remove('on'), i*85));
-    later(()=>{ A.vox.currentTime = 0; A.vox.volume = 0.95; play(A.vox); }, 90);
-    // 人声 13 秒，必须放完才进落版；放完自动跳，兜底 14.2 秒
-    A.vox.onended = ()=>{ go(ORDER.indexOf('s9')); };
-    later(()=>{ if(ORDER[at] !== 's9') go(ORDER.indexOf('s9')); }, 14200);
+    shintOff();
+    // 钢琴压到 0.2 当人声的底，不硬切
+    fade(A.piano, A.piano.volume, 0.20, 700);
+    // 两根火苗依次灭，吹的那一下有点回弹
+    [0,1].forEach(i=>later(()=>{
+      const f = $('#fl' + (i+1));
+      if(f){ f.classList.remove('on'); }
+    }, 60 + i * 160));
+    later(()=>{ A.vox.currentTime = 0; A.vox.volume = 1.0; play(A.vox); }, 320);
+    // 人声 13 秒，放完才进落版；兜底 14.2 秒
+    A.vox.onended = ()=>{ startEnding(); };
+    later(()=>{ startEnding(); }, 14200);
   }
 
   // ====== 素龙的篮子：一张一点 ======
@@ -792,13 +820,20 @@ const MAIN_START = 2.0;
 
   function lightAll(){ lightFlame(0); lightFlame(1); }
 
+  function shint(t){
+    const el = $('#shint');
+    el.textContent = t;
+    el.classList.add('on');
+  }
+  function shintOff(){ const el=$('#shint'); if(el) el.classList.remove('on'); }
+
   function startSong(){
     if(songOn) return;
     songOn = true;
     tapcue.classList.remove('on');
     try{ A.piano.currentTime = 2.86; A.piano.volume = 0; play(A.piano); fade(A.piano, 0, 0.95, 600); }catch(_){}
     $('#wish').classList.add('on');
-    later(()=>{ if(ORDER[at]==='s8') cue('按 住 许 愿'); }, 700);
+    later(()=>{ if(ORDER[at]==='s8') shint('按 住 许 愿，别 松'); }, 600);
   }
 
   let holdTimer = null, holding = false;
@@ -806,9 +841,9 @@ const MAIN_START = 2.0;
     if(holding || lit < 2) return;
     holding = true;
     const bar = $('#wish i');
-    bar.style.transition = 'width 1.5s linear';
+    bar.style.transition = 'width 2.8s linear';
     bar.style.width = '100%';
-    holdTimer = setTimeout(()=>{ holding = false; blowScene(); }, 1500);
+    holdTimer = setTimeout(()=>{ holding = false; blowScene(); }, 2800);
   }
   function cancelHold(){
     if(!holding) return;
