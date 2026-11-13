@@ -650,8 +650,8 @@ const MAIN_START = 2.0;
     $('#wish').classList.remove('on');
     songOn = false;
     shintOff();
-    // 钢琴压到 0.2 当人声的底，不硬切
-    fade(A.piano, A.piano.volume, 0.10, 700);
+    // 生日歌继续当伴奏，别停；压到 0.45 让人声浮上面但别盖过歌
+    fade(A.piano, A.piano.volume, 0.45, 700);
     // 两根火苗依次灭，吹的那一下有点回弹
     [0,1].forEach(i=>later(()=>{
       const f = $('#fl' + (i+1));
