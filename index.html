@@ -608,7 +608,10 @@
       const d = document.createElement('div');
       d.className = 'pop';
       d.dataset.i = i;
-      d.innerHTML = '<img src="' + POP_SRC[i] + '" alt="">';
+      var im = document.createElement('img');
+      im.src = POP_SRC[i];
+      im.alt = '';
+      d.appendChild(im);
       host.appendChild(d);
     }
   }
