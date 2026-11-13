@@ -399,7 +399,7 @@ const MAIN_START = 2.0;
   const A = {
     main:  new Audio('assets/audio/main_a.mp3'),
     piano: new Audio('assets/audio/piano_hbd.mp3'),
-    vox:   new Audio('assets/audio/vox.mp3'),
+    vox:   new Audio('assets/audio/vox_loud.mp3'),
     end:   new Audio('assets/audio/main_b.mp3')
   };
   Object.values(A).forEach(a=>{ a.preload='auto'; });
@@ -599,6 +599,9 @@ const MAIN_START = 2.0;
       $('#wish i').style.width = '0%';
       $('#s8').classList.remove('up');
       setTimeout(()=>$('#s8').classList.add('up'), 120);
+      // 主曲到这一幕让位给钢琴版，淡出后彻底停
+      if(!A.main.paused){ try{ fade(A.main, A.main.volume, 0, 900); }catch(_){} }
+      later(()=>{ try{ A.main.pause(); }catch(_){} }, 1000);
       later(()=>{ if(ORDER[at]==='s8' && lit === 0) shint('点 一 下 蜡 烛'); }, 1200);
       setDots(5);
       // 她一直不点：28 秒后自己点完，别卡死
@@ -648,7 +651,7 @@ const MAIN_START = 2.0;
     songOn = false;
     shintOff();
     // 钢琴压到 0.2 当人声的底，不硬切
-    fade(A.piano, A.piano.volume, 0.20, 700);
+    fade(A.piano, A.piano.volume, 0.10, 700);
     // 两根火苗依次灭，吹的那一下有点回弹
     [0,1].forEach(i=>later(()=>{
       const f = $('#fl' + (i+1));
