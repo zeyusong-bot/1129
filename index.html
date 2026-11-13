@@ -36,7 +36,10 @@
   html,body{margin:0;height:100%;background:var(--ink);color:var(--txt);overflow:hidden;
     font-family:"Q",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
     -webkit-font-smoothing:antialiased}
-  #stage{position:fixed;inset:0;overflow:hidden;touch-action:manipulation}
+  #stage{position:fixed;inset:0;overflow:hidden;touch-action:manipulation;
+    -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+  html,body{overscroll-behavior:none}
 
   section{position:absolute;inset:0;opacity:0;pointer-events:none;
     transition:opacity .62s cubic-bezier(.22,.9,.3,1), transform .62s cubic-bezier(.22,.9,.3,1);
