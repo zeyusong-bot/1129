@@ -122,6 +122,15 @@
   #s6{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:0 10vw}
   #s6 p{font-size:3.3vh;line-height:1.85;margin:0;letter-spacing:.05em;text-align:center}
 
+  /* ---------- 玩笑收尾 ---------- */
+  #s7{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.6vh;padding:0 10vw}
+  #s7 p{font-size:3.4vh;line-height:1.9;margin:0;letter-spacing:.05em;text-align:center}
+  #next{margin-top:1vh;background:transparent;border:1px solid rgba(255,214,230,.40);color:#ffd9e6;
+    font-family:inherit;font-size:2.2vh;padding:1.3vh 8vw;border-radius:99px;
+    letter-spacing:.22em;opacity:0;transition:opacity .6s ease}
+  #next.on{opacity:1}
+  #next:active{background:rgba(255,111,165,.16)}
+
   /* ---------- 蛋糕 ---------- */
   /* 6.5 素龙的篮子：五张表情包堆出来 */
   #s6b{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
@@ -334,7 +343,12 @@
       <p id="bfin">不开玩笑啦，<br><span class="k">后面就是惊喜。</span></p>
     </section>
 
-    <!-- 7 端蛋糕 -->
+    <!-- 7 玩笑收尾 -->
+    <section id="s7">
+      <p>算啦算啦，<br>不和小王同学开玩笑了。</p>
+      <button id="next">继 续</button>
+    </section>
+
   <!-- 8 点蜡烛：她点一根，亮一根，出来一个字 -->
   <section id="s8">
     <div class="chars"><b>生</b><b>日</b><b>快</b><b>乐</b></div>
@@ -427,7 +441,7 @@ const MAIN_START = 2.0;
   function setDots(n){ $$('#dots i').forEach((d,i)=>d.classList.toggle('on', i<=n)); }
 
   // ====== 场景机 ======
-  const ORDER = ['gate','s1','s2','s3','s4','s5','s6','s6b','s8','s9'];
+  const ORDER = ['gate','s1','s2','s3','s4','s5','s6','s6b','s7','s8','s9'];
   let at = 0;          // 当前场景索引
   let locked = true;   // 门上锁时不响应点击
   let timers = [];
@@ -448,8 +462,7 @@ const MAIN_START = 2.0;
   }
   function go(idx){
     const prev = ORDER[at], next = ORDER[idx];
-    // 进四字屏时，蛋糕要留在画面上（不清 s7）
-    if(prev!==next && !(next==='s8' && prev==='s7')) hide(prev);
+    if(prev!==next) hide(prev);
     at = idx;
     show(next);
     onEnter(next);
@@ -581,6 +594,14 @@ const MAIN_START = 2.0;
       }
       later(idleTick, 6500);
       if(new URLSearchParams(location.search).get('simtap')){ later(()=>popOne(), 900); }
+    }
+
+    if(id==='s7'){
+      locked = true;
+      $('#next').classList.remove('on');
+      var f7 = typeIn($('#s7 p'), 0.60, 0.165);
+      later(()=>{ $('#next').classList.add('on'); }, f7 * 1000 + 350);
+      setDots(5);
     }
 
     if(id==='s8'){
@@ -747,9 +768,8 @@ const MAIN_START = 2.0;
       later(()=>{
         $('#bline').classList.remove('on');
         $('#s6b').classList.add('dim');
-        $('#bfin').classList.add('on');
-        later(()=>{ if(ORDER[at]==='s6b') advance(true); }, 3000);
-      }, 2600);
+        later(()=>{ if(ORDER[at]==='s6b') advance(true); }, 1600);
+      }, 2400);
     }
     return true;
   }
@@ -864,6 +884,7 @@ const MAIN_START = 2.0;
     if(!auto && locked) return;
     const cur = ORDER[at];
     if(cur==='s6b'){ if(pops < 5){ popOne(); return; } }   // 五张没出完就继续掏；出完了才往下走
+    if(cur==='s7'){ if(!auto) return; }
     if(cur==='s8'){ blowScene(); return; }
     const idx = ORDER.indexOf(cur);
     if(idx < 0) return;
@@ -881,7 +902,7 @@ const MAIN_START = 2.0;
               {duration:520,easing:'cubic-bezier(.22,.9,.3,1)'});
   }
   stage.addEventListener('pointerdown', e=>{
-    if(e.target.closest('#ans') || e.target.closest('#again')) return;
+    if(e.target.closest('#ans') || e.target.closest('#again') || e.target.closest('#next')) return;
     if(ORDER[at]==='s8'){
       if(lit < 2){
         if(lightFlame(lit)){
@@ -962,6 +983,12 @@ const MAIN_START = 2.0;
   });
 
   // 6c：吹灭改成「按住许愿」（见 startHold / blowScene）
+
+  // ====== 玩笑收尾按钮 ======
+  $('#next').addEventListener('click', ()=>{
+    if(ORDER[at] !== 's7') return;
+    go(ORDER.indexOf('s8'));
+  });
 
   // ====== 再看一遍 ======
   $('#again').addEventListener('click', ()=>{
