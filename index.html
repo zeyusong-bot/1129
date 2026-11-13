@@ -117,6 +117,34 @@
   #s6 p{font-size:3.3vh;line-height:1.85;margin:0;letter-spacing:.05em;text-align:center}
 
   /* ---------- 蛋糕 ---------- */
+  /* 6.5 素龙的篮子：五张表情包堆出来 */
+  #s6b{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+       padding-top:7vh;gap:0}
+  #bwrap{position:relative;display:inline-block;line-height:0}
+  #bimg{display:block;width:84vw;max-width:430px;height:auto;max-height:52vh;
+        object-fit:contain;filter:drop-shadow(0 0 6vh rgba(255,111,165,.16))}
+  #bwrap.tap{animation:breathe 3.4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
+  .pop{position:absolute;left:50%;top:50%;z-index:1;width:23vw;max-width:112px;aspect-ratio:1;
+       transform:translate(-50%,-50%) scale(.14);opacity:0;pointer-events:none;
+       border-radius:1.1vh;background:#fffdf8;box-shadow:0 1.4vh 4vh rgba(0,0,0,.62);
+       display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .pop img{width:100%;height:100%;object-fit:contain;display:block}
+  .pop .ph{font-family:Q,inherit;font-size:4.4vh;color:#c9a3b4;opacity:.85}
+  #bcue{margin-top:2.4vh;font-size:2.15vh;letter-spacing:.24em;color:rgba(255,255,255,.46);
+        opacity:0;transition:opacity .5s ease}
+  #bcue.on{opacity:1}
+  #bline{position:absolute;left:0;right:0;bottom:13vh;padding:0 8vw;text-align:center;z-index:6;
+         font-size:2.55vh;line-height:1.62;color:#ffd6e6;opacity:0;
+         transition:opacity .32s ease;text-shadow:0 0 4vh rgba(0,0,0,.7)}
+  #bline.on{opacity:1}
+  #bfin{position:absolute;left:0;right:0;bottom:12vh;padding:0 8vw;text-align:center;z-index:6;
+        font-size:3.3vh;line-height:1.7;color:#fff;opacity:0;
+        text-shadow:0 0 6vh rgba(255,111,165,.45)}
+  #bfin.on{opacity:1}
+  #bfin .k{color:var(--pink)}
+  #s6b.dim .pop[data-i="3"], #s6b.dim .pop[data-i="4"]{opacity:.42;filter:blur(1.2px)}
+
   #s7{display:flex;flex-direction:column;align-items:center;justify-content:center}
   #cake{position:relative;width:58vw;height:26vh;transform:translateY(6vh);opacity:0;
          transition:transform 1.6s cubic-bezier(.22,.9,.3,1),opacity 1.2s ease}
@@ -243,7 +271,15 @@
     <p>但你喜欢什么，<br>这件事我没搞错。</p>
   </section>
 
-  <!-- 7 端蛋糕 -->
+  <!-- 6.5 素龙的篮子 -->
+    <section id="s6b">
+      <div id="bwrap"><img id="bimg" src="assets/web/s3.webp" alt=""></div>
+      <p id="bcue">点 一 下 篮 子</p>
+      <p id="bline"></p>
+      <p id="bfin">不开玩笑啦，<br><span class="k">后面就是惊喜。</span></p>
+    </section>
+
+    <!-- 7 端蛋糕 -->
   <section id="s7">
     <div id="cake">
       <div class="body"></div>
@@ -288,7 +324,7 @@
   };
   // ====== 配置：她的生日（月 / 日）======
   const BIRTH = { m: 11, d: 29 };
-  const TOTAL_STEPS = 7;
+  const TOTAL_STEPS = 8;
 
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
@@ -327,7 +363,7 @@
   function setDots(n){ $$('#dots i').forEach((d,i)=>d.classList.toggle('on', i<=n)); }
 
   // ====== 场景机 ======
-  const ORDER = ['gate','s1','s2','s3','s4','s5','s6','s7','s8','s9'];
+  const ORDER = ['gate','s1','s2','s3','s4','s5','s6','s6b','s7','s8','s9'];
   let at = 0;          // 当前场景索引
   let locked = true;   // 门上锁时不响应点击
   let timers = [];
@@ -464,6 +500,25 @@
       setDots(4);
     }
 
+    if(id==='s6b'){
+      locked = false;               // 这一屏的点击不开新屏，是开箱
+      tapcue.classList.remove('on');
+      resetBasket();
+      setDots(4);
+      var dbgPop = parseInt(new URLSearchParams(location.search).get('pop') || '0', 10);
+      if(dbgPop > 0){
+        for(var i=0;i<Math.min(dbgPop,5);i++){ placePop(i); }
+        pops = Math.min(dbgPop,5);
+        $('#bcue').classList.remove('on');
+        $('#bwrap').classList.remove('tap');
+        $('#bline').textContent = POP_LINE[pops-1];
+        $('#bline').classList.add('on');
+        if(pops >= 5){ $('#bline').classList.remove('on'); $('#bfin').classList.add('on'); }
+      }
+      later(idleTick, 6500);
+      if(new URLSearchParams(location.search).get('simtap')){ later(()=>popOne(), 900); }
+    }
+
     if(id==='s7'){
       // 6a 端蛋糕：无点击，8 秒后自动进 6b
       locked = true;
@@ -532,6 +587,106 @@
     later(()=>{ if(ORDER[at] !== 's9') go(ORDER.indexOf('s9')); }, 14200);
   }
 
+  // ====== 素龙的篮子：一张一点 ======
+  const POP_SPOT = [[21,18,-7],[63,11,5],[83,37,9],[18,56,-6],[61,65,6]];   // 整屏百分比
+  const POP_LINE = [
+    '这个我发过，是我不对。',
+    '这个你说看了想洗手。',
+    '这个你说像你班主任。',
+    '这个你已读不回。',
+    '这个你回了三个点。'
+  ];
+  let pops = 0, lastTapAt = 0, basketBuilt = false;
+
+  function buildBasket(){
+    if(basketBuilt) return;
+    basketBuilt = true;
+    const host = $('#s6b');
+    for(let i=0;i<5;i++){
+      const d = document.createElement('div');
+      d.className = 'pop';
+      d.dataset.i = i;
+      d.innerHTML = '<div class="ph">?</div>';
+      host.appendChild(d);
+    }
+  }
+
+  // 篮口在屏幕上的百分比位置（运行时按图片实际盒子算，79%/63% 是从素材上量出来的）
+  function basketAnchor(){
+    const img = $('#bimg'), sec = $('#s6b');
+    if(!img || !sec) return [50, 50];
+    const r = img.getBoundingClientRect(), sr = sec.getBoundingClientRect();
+    if(!sr.width || !sr.height) return [50, 50];
+    return [ (r.left - sr.left + r.width * 0.79) / sr.width * 100,
+             (r.top  - sr.top  + r.height * 0.63) / sr.height * 100 ];
+  }
+
+  function resetBasket(){
+    buildBasket();
+    pops = 0;
+    lastTapAt = Date.now();
+    const an = basketAnchor();
+    $$('#s6b .pop').forEach(p=>{
+      p.getAnimations().forEach(a=>a.cancel());
+      p.style.opacity = '0';
+      p.style.left = an[0] + '%';
+      p.style.top  = an[1] + '%';
+      p.style.transform = 'translate(-50%,-50%) scale(.14)';
+    });
+    $('#bline').classList.remove('on');
+    $('#bline').textContent = '';
+    $('#bfin').classList.remove('on');
+    $('#s6b').classList.remove('dim');
+    $('#bcue').classList.add('on');
+    $('#bwrap').classList.add('tap');
+  }
+
+  function placePop(i){
+    const el = $$('#s6b .pop')[i], sp = POP_SPOT[i];
+    el.style.opacity='1';
+    el.style.left = sp[0]+'%'; el.style.top = sp[1]+'%';
+    el.style.transform = 'translate(-50%,-50%) scale(1) rotate('+sp[2]+'deg)';
+  }
+
+  function popOne(){
+    if(pops >= 5) return false;
+    const i = pops;
+    const el = $$('#s6b .pop')[i];
+    const sp = POP_SPOT[i];
+    const an = basketAnchor();
+    $('#bwrap').classList.remove('tap');
+    $('#bcue').classList.remove('on');
+    el.style.opacity = '1';
+    const a = el.animate([
+      {left: an[0]+'%', top: an[1]+'%', transform:'translate(-50%,-50%) scale(.14) rotate(0deg)', opacity:0},
+      {left: sp[0]+'%', top: sp[1]+'%', transform:'translate(-50%,-50%) scale(1.14) rotate('+sp[2]+'deg)', opacity:1, offset:.74},
+      {left: sp[0]+'%', top: sp[1]+'%', transform:'translate(-50%,-50%) scale(1) rotate('+sp[2]+'deg)',    opacity:1}
+    ], {duration:560, easing:'cubic-bezier(.18,1.18,.32,1)', fill:'forwards'});
+    a.onfinish = ()=>{ el.style.left = sp[0]+'%'; el.style.top = sp[1]+'%'; };
+    later(()=>{ placePop(i); }, 700);   // 兜底：动画万一没跑完，也让它落在终点
+    pops++;
+    lastTapAt = Date.now();
+    const line = $('#bline');
+    line.classList.remove('on');
+    later(()=>{ line.textContent = POP_LINE[i]; line.classList.add('on'); }, 260);
+    if(pops >= 5){
+      later(()=>{
+        $('#bline').classList.remove('on');
+        $('#s6b').classList.add('dim');
+        $('#bfin').classList.add('on');
+        later(()=>{ if(ORDER[at]==='s6b') advance(true); }, 3000);
+      }, 1500);
+    }
+    return true;
+  }
+
+  function idleTick(){
+    if(ORDER[at] !== 's6b') return;
+    if(pops >= 5) return;
+    if(Date.now() - lastTapAt > 6500){ popOne(); }
+    later(idleTick, 1200);
+  }
+
   // ====== 粉色格子：上色 / 点亮 ======
   const GRID_PICK = 37;
   function gridPaint(light){
@@ -564,6 +719,7 @@
   function advance(auto){
     if(!auto && locked) return;
     const cur = ORDER[at];
+    if(cur==='s6b'){ if(pops < 5){ popOne(); return; } }   // 五张没出完就继续掏；出完了才往下走
     if(cur==='s8'){ blowScene(); return; }
     const idx = ORDER.indexOf(cur);
     if(idx < 0) return;
