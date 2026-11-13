@@ -148,40 +148,72 @@
   #bfin .k{color:var(--pink)}
   #s6b.dim .pop[data-i="3"], #s6b.dim .pop[data-i="4"]{opacity:.42;filter:blur(1.2px)}
 
-  #s7{display:flex;flex-direction:column;align-items:center;justify-content:center}
-  #cake{position:relative;width:58vw;height:26vh;transform:translateY(6vh);opacity:0;
-         transition:transform 1.6s cubic-bezier(.22,.9,.3,1),opacity 1.2s ease}
-  #cake.up{transform:none;opacity:1}
-  #cake .body{position:absolute;left:0;right:0;bottom:0;height:74%;
-    background:linear-gradient(#ffd0e2,#ff8fb7 62%,#e8629a);
-    border-radius:2.4vh 2.4vh 3.2vh 3.2vh;
-    box-shadow:inset 0 -2vh 4vh rgba(160,40,90,.28),0 2vh 6vh rgba(255,111,165,.22)}
-  #cake .top{position:absolute;left:-2.5%;right:-2.5%;top:20%;height:16%;
-    background:radial-gradient(ellipse at 50% 40%,#fffdf6,#f3e4cd);
-    border-radius:50%}
-  #cake .drip{position:absolute;left:2%;right:2%;top:28%;height:9%;
-    background:radial-gradient(ellipse at 50% 0%,#fffdf6,#f0dfc6);border-radius:50% 50% 45% 45%}
-  .candle{position:absolute;bottom:60%;width:1.5vh;height:9vh;border-radius:.4vh;
-    background:linear-gradient(90deg,#ffe9f2,#fff,#ffd3e4)}
-  .candle .wick{position:absolute;left:50%;top:-.5vh;width:1px;height:.6vh;background:#4a2a38;transform:translateX(-50%)}
-  .flame{position:absolute;left:50%;top:-3.4vh;width:1.5vh;height:3vh;transform:translateX(-50%) scale(.2);
-    border-radius:50% 50% 45% 45%;opacity:0;
-    background:radial-gradient(ellipse at 50% 72%,#fffbe0 0%,#ffd75e 42%,#ff8a1e 72%,rgba(255,110,0,0) 100%);
-    filter:blur(.3px);transition:opacity .5s ease,transform .5s ease;
-    box-shadow:0 0 3vh rgba(255,180,60,.75)}
-  .flame.on{opacity:1;transform:translateX(-50%) scale(1);animation:flick .28s infinite alternate}
-  @keyframes flick{from{transform:translateX(-50%) scale(1) rotate(-3deg)}to{transform:translateX(-50%) scale(1.08) rotate(3deg)}}
-  #s7 .cap{position:absolute;bottom:14vh;left:0;right:0;text-align:center;font-size:2.3vh;
-    color:#d9b6c6;opacity:0;transition:opacity .8s ease}
-  #s7 .cap.on{opacity:1}
+  /* ---------- 6a 端蛋糕 / 6b 点蜡烛 ---------- */
+  #s8{display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #s8 .bgdragon{position:absolute;left:50%;bottom:1vh;width:96vw;transform:translateX(-50%);
+    opacity:0;filter:blur(1.8px) brightness(.66) saturate(.95);transition:opacity 1.2s ease}
+  #s8.up .bgdragon{opacity:1}
 
-  /* ---------- 四字 ---------- */
-  #s8{display:flex;align-items:flex-start;justify-content:center;padding-top:12vh;gap:1.2vw}
-  #s8 b{font-size:min(11vh,21vw);font-weight:900;letter-spacing:.03em;color:#fff;
-    opacity:0;transform:translateY(2.4vh) scale(1.06);filter:blur(6px);
-    transition:opacity .6s ease,transform .6s cubic-bezier(.22,.9,.3,1),filter .6s ease;
-    text-shadow:0 0 6vh rgba(255,111,165,.55)}
-  #s8 b.on{opacity:1;transform:none;filter:none}
+  .cakeBox{position:relative;width:var(--cw,46vw);height:var(--ch,21vh);z-index:2}
+  .cakeBox .plate{position:absolute;left:-1%;right:-1%;bottom:-1.9vh;height:2.2vh;
+    background:radial-gradient(ellipse at 50% 26%,#fff8fb,#c9a2b1 60%,#6b4a55);
+    border:.28vh solid #2b0a16;border-radius:50%;
+    box-shadow:0 2.2vh 4vh rgba(0,0,0,.75)}
+  .cakeBox .body{position:absolute;left:3%;right:3%;bottom:0;height:72%;
+    background:
+      linear-gradient(90deg,rgba(80,10,40,.34) 0%,rgba(80,10,40,0) 16%,
+                      rgba(80,10,40,0) 84%,rgba(80,10,40,.34) 100%),
+      linear-gradient(#ffe1ec 0%,#ff9dc0 42%,#d95a92 100%);
+    border:.42vh solid #2b0a16;border-radius:1.4vh 1.4vh 2.2vh 2.2vh;
+    box-shadow:inset 0 -2.4vh 3vh rgba(120,20,60,.42)}
+  .cakeBox .top{position:absolute;left:-1%;right:-1%;top:11%;height:19%;z-index:3;
+    background:radial-gradient(ellipse at 50% 30%,#fffdf6,#f4e6cf 68%,#e2c9a9);
+    border:.42vh solid #2b0a16;border-radius:50% 50% 46% 46%}
+  .cakeBox .drip{position:absolute;left:-1%;right:-1%;top:22%;height:12%;z-index:4;
+    background:radial-gradient(ellipse at 50% 0%,#fffdf6,#f6e8d2 82%,rgba(246,232,210,0) 100%);
+    border-radius:0 0 48% 48%/0 0 100% 100%}
+  .cakeBox .drops{position:absolute;left:5%;right:5%;top:24%;z-index:5;
+    display:flex;justify-content:space-between;align-items:flex-start}
+  .cakeBox .drops i{display:block;background:linear-gradient(#fdf3e2,#f6e7cf);
+    border-radius:0 0 50% 50%;filter:drop-shadow(0 .34vh 0 rgba(43,10,22,.45))}
+  .cakeBox .drops i:nth-child(1){width:1.5vh;height:2.4vh}
+  .cakeBox .drops i:nth-child(2){width:1.5vh;height:3.6vh}
+  .cakeBox .drops i:nth-child(3){width:1.5vh;height:2.1vh}
+  .cakeBox .drops i:nth-child(4){width:1.5vh;height:3.9vh}
+  .cakeBox .drops i:nth-child(5){width:1.5vh;height:2.6vh}
+  .cakeBox .drops i:nth-child(6){width:1.5vh;height:3.2vh}
+  .cakeBox .candle{position:absolute;bottom:57%;width:2.2vh;height:8.4vh;z-index:6;
+    border:.3vh solid #2b0a16;border-radius:.5vh;
+    background:repeating-linear-gradient(0deg,#fffdf6 0,#fffdf6 1.1vh,#ff7fa8 1.1vh,#ff7fa8 1.9vh);
+    transition:transform .2s ease}
+  .cakeBox .candle.lit{transform:scale(1)}
+  .cakeBox .candle .wick{position:absolute;left:50%;top:-.85vh;width:.22vh;height:1vh;
+    background:#3a1020;transform:translateX(-50%)}
+  .cakeBox .flame{position:absolute;left:50%;top:-4.1vh;width:2vh;height:4vh;
+    transform:translateX(-50%) scale(.2);border-radius:50% 50% 46% 46%;opacity:0;
+    background:radial-gradient(ellipse at 50% 74%,#fffce6 0%,#ffe06a 40%,#ff8a1e 72%,rgba(255,110,0,0) 100%);
+    filter:blur(.2px);transition:opacity .45s ease,transform .5s cubic-bezier(.2,1.6,.4,1);
+    box-shadow:0 0 3.4vh rgba(255,180,60,.8)}
+  .cakeBox .flame.on{opacity:1;transform:translateX(-50%) scale(1);animation:flick .26s infinite alternate}
+  @keyframes flick{from{transform:translateX(-50%) scale(1) rotate(-3deg)}to{transform:translateX(-50%) scale(1.09) rotate(3deg)}}
+
+  /* 6b：素龙端着（虚化），蛋糕升起，四字在上，蜡烛她点 */
+  #s8 .cakeBox{--cw:64vw;--ch:27vh;margin-top:4vh;
+    transform:translateY(6vh) scale(.9);opacity:0;
+    transition:transform 1.4s cubic-bezier(.22,.9,.3,1),opacity 1s ease .1s}
+  #s8.up .cakeBox{transform:none;opacity:1}
+  #s8 .chars{display:flex;gap:1.6vw;margin-bottom:1.4vh}
+  #s8 .chars b{font-size:min(8.6vh,17vw);font-weight:900;letter-spacing:.02em;color:#fff;
+    opacity:0;transform:translateY(2vh) scale(1.08);filter:blur(6px);
+    transition:opacity .5s ease,transform .5s cubic-bezier(.22,.9,.3,1),filter .5s ease;
+    text-shadow:0 0 5vh rgba(255,111,165,.5)}
+  #s8 .chars b.on{opacity:1;transform:none;filter:none}
+  #wish{position:absolute;left:50%;bottom:15vh;transform:translateX(-50%);width:38vw;height:.55vh;
+    background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;opacity:0;
+    transition:opacity .5s ease;z-index:9}
+  #wish.on{opacity:1}
+  #wish i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff6fa5,#ffd6e6);
+    border-radius:99px}
 
   /* ---------- 落版 ---------- */
   #s9{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2vh;padding:0 8vw}
@@ -283,22 +315,22 @@
     </section>
 
     <!-- 7 端蛋糕 -->
-  <section id="s7">
-    <div id="cake">
-      <div class="body"></div>
-      <div class="drip"></div>
-      <div class="top"></div>
-      <div class="candle" style="left:24%"><div class="wick"></div><div class="flame"></div></div>
-      <div class="candle" style="left:41%"><div class="wick"></div><div class="flame"></div></div>
-      <div class="candle" style="left:58%"><div class="wick"></div><div class="flame"></div></div>
-      <div class="candle" style="left:75%"><div class="wick"></div><div class="flame"></div></div>
-    </div>
-    <div class="cap" id="cap7">许个愿</div>
-  </section>
-
-  <!-- 8 四字 -->
+  <!-- 8 点蜡烛：她点一根，亮一根，出来一个字 -->
   <section id="s8">
-    <b>生</b><b>日</b><b>快</b><b>乐</b>
+    <img class="bgdragon" src="assets/web/s5.webp" alt="">
+    <div class="chars"><b>生</b><b>日</b><b>快</b><b>乐</b></div>
+    <div class="cakeBox">
+      <div class="plate"></div>
+      <div class="body"></div>
+      <div class="top"></div>
+      <div class="drip"></div>
+      <div class="drops"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="candle" data-i="0" style="left:17%"><div class="wick"></div><div class="flame"></div></div>
+      <div class="candle" data-i="1" style="left:39%"><div class="wick"></div><div class="flame"></div></div>
+      <div class="candle" data-i="2" style="left:61%"><div class="wick"></div><div class="flame"></div></div>
+      <div class="candle" data-i="3" style="left:83%"><div class="wick"></div><div class="flame"></div></div>
+    </div>
+    <div id="wish"><i></i></div>
   </section>
 
   <!-- 9 落版 -->
@@ -327,7 +359,7 @@
   };
   // ====== 配置：她的生日（月 / 日）======
   const BIRTH = { m: 11, d: 29 };
-  const TOTAL_STEPS = 8;
+  const TOTAL_STEPS = 7;
 
   // ======================================================================
   //  改文案：篮子里那五张表情包，点出来时底部说的五句话
@@ -379,7 +411,7 @@
   function setDots(n){ $$('#dots i').forEach((d,i)=>d.classList.toggle('on', i<=n)); }
 
   // ====== 场景机 ======
-  const ORDER = ['gate','s1','s2','s3','s4','s5','s6','s6b','s7','s8','s9'];
+  const ORDER = ['gate','s1','s2','s3','s4','s5','s6','s6b','s8','s9'];
   let at = 0;          // 当前场景索引
   let locked = true;   // 门上锁时不响应点击
   let timers = [];
@@ -535,43 +567,26 @@
       if(new URLSearchParams(location.search).get('simtap')){ later(()=>popOne(), 900); }
     }
 
-    if(id==='s7'){
-      // 6a 端蛋糕：无点击，8 秒后自动进 6b
-      locked = true;
-      // 主曲退场：0.7 秒淡出后硬停，别让它垫在钢琴底下
-      fade(A.main, A.main.volume, 0, 700);
-      later(()=>{ A.main.pause(); }, 780);
-      tapcue.classList.remove('on');
-      var cake = $('#cake');
-      cake.classList.remove('up');
-      $$('.flame').forEach(f=>f.classList.remove('on'));
-      $('#cap7').classList.remove('on');
-      later(()=>cake.classList.add('up'), 260);
-      later(function(){ $('#cap7').classList.add('on'); typeIn($('#cap7'), 0, 0.34); }, 2400);
-      setDots(5);
-      later(()=>advance(true), 7600);
-    }
-
     if(id==='s8'){
-      // 6b：钢琴起，四字落在四个音上
+      // 6b：素龙端着（虚化），蛋糕升起；四根蜡烛她自己点，一笔一笔把"生日快乐"点出来
       blown = false;
       locked = true;
+      lit = 0;
+      songOn = false;
       tapcue.classList.remove('on');
-      A.piano.currentTime = 0;
-      A.piano.volume = 0.0;
-      play(A.piano);
-      fade(A.piano, 0, 0.95, 700);
-      // 蜡烛一根根点亮
-      $$('.candle').forEach((c,i)=>later(()=>c.querySelector('.flame').classList.add('on'), 150 + i*220));
-      // 生 日 快 乐 —— 钢琴实测起音 0.40 / 0.81 / 1.62 / 2.46
-      const ON = [0.40, 0.81, 1.62, 2.46];
-      const bs = $$('#s8 b');
-      bs.forEach((b,i)=>{ b.classList.remove('on'); later(()=>b.classList.add('on'), ON[i]*1000 + 120); });
-      setDots(6);
-      later(()=>advance(true), 9000);
+      $$('#s8 .flame').forEach(f=>f.classList.remove('on'));
+      $$('#s8 .candle').forEach(c=>c.classList.remove('lit'));
+      $$('#s8 .chars b').forEach(b=>b.classList.remove('on'));
+      $('#wish').classList.remove('on');
+      $('#wish i').style.transition = 'none';
+      $('#wish i').style.width = '0%';
+      $('#s8').classList.remove('up');
+      setTimeout(()=>$('#s8').classList.add('up'), 120);
+      later(()=>{ if(ORDER[at]==='s8') cue('点 蜡 烛'); }, 1500);
+      setDots(5);
+      // 她一直不点：28 秒后自己点完，别卡死
+      later(()=>{ if(ORDER[at]==='s8' && lit < 4){ lightAll(); } }, 28000);
     }
-
-    if(id==='s8'){}
 
     if(id==='s9'){
       // 落版：先收起蛋糕和四字
@@ -594,6 +609,9 @@
     blown = true;
     clearTimers();
     tapcue.classList.remove('on');
+    cancelHold();
+    $('#wish').classList.remove('on');
+    songOn = false;
     fade(A.piano, A.piano.volume, 0, 600);
     later(()=>{ A.piano.pause(); }, 700);
     $$('.flame').forEach((f,i)=>later(()=>f.classList.remove('on'), i*120));
@@ -730,6 +748,63 @@
   }
 
   // ====== 推进 ======
+  // ====== 6b 蛋糕：她点一根，亮一根，出一个字 ======
+  let lit = 0, songOn = false;
+  const NOTE_AT = [0.40, 0.81, 1.62, 2.46];   // 钢琴实测：生/日/快/乐 四个起音
+  function cue(t){ tapcue.textContent = t; tapcue.classList.add('on'); }
+
+  function noteAt(i){
+    try{
+      const np = new Audio(A.piano.src);
+      np.volume = 0.9;
+      np.currentTime = NOTE_AT[i];
+      play(np);
+      later(()=>{ try{ np.pause(); }catch(_){} }, 820);
+    }catch(_){}
+  }
+
+  function lightCandle(el){
+    if(!el || el.classList.contains('lit')) return;
+    const i = parseInt(el.dataset.i, 10);
+    el.classList.add('lit');
+    const fl = el.querySelector('.flame');
+    if(fl) fl.classList.add('on');
+    const b = $$('#s8 .chars b')[i];
+    if(b) b.classList.add('on');
+    noteAt(i);
+    lit++;
+    if(lit >= 4) startSong();
+  }
+
+  function lightAll(){ $$('#s8 .candle').forEach(el=>lightCandle(el)); }
+
+  function startSong(){
+    if(songOn) return;
+    songOn = true;
+    tapcue.classList.remove('on');
+    try{ A.piano.currentTime = 2.86; A.piano.volume = 0; play(A.piano); fade(A.piano, 0, 0.95, 600); }catch(_){}
+    $('#wish').classList.add('on');
+    later(()=>{ if(ORDER[at]==='s8') cue('按 住 许 愿'); }, 700);
+  }
+
+  let holdTimer = null, holding = false;
+  function startHold(){
+    if(holding || lit < 4) return;
+    holding = true;
+    const bar = $('#wish i');
+    bar.style.transition = 'width 1.5s linear';
+    bar.style.width = '100%';
+    holdTimer = setTimeout(()=>{ holding = false; blowScene(); }, 1500);
+  }
+  function cancelHold(){
+    if(!holding) return;
+    holding = false;
+    clearTimeout(holdTimer);
+    const bar = $('#wish i');
+    bar.style.transition = 'width .25s ease';
+    bar.style.width = '0%';
+  }
+
   function advance(auto){
     if(!auto && locked) return;
     const cur = ORDER[at];
@@ -751,12 +826,23 @@
               {duration:520,easing:'cubic-bezier(.22,.9,.3,1)'});
   }
   stage.addEventListener('pointerdown', e=>{
-    if(at===0 && !locked) {} // 门自己处理
     if(e.target.closest('#ans') || e.target.closest('#again')) return;
+    if(ORDER[at]==='s8'){
+      const cd = e.target.closest('#s8 .candle');
+      if(cd && lit < 4){
+        ripple(e.clientX, e.clientY);
+        if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){} }
+        lightCandle(cd);
+        return;
+      }
+      if(lit >= 4){ startHold(); return; }
+      return;
+    }
     ripple(e.clientX, e.clientY);
     if(navigator.vibrate){ try{ navigator.vibrate(8); }catch(_){} }
     advance(false);
   });
+  ['pointerup','pointercancel'].forEach(t=>stage.addEventListener(t, cancelHold, {passive:true}));
 
   // ====== 密码门 ======
   function norm(s){
@@ -821,12 +907,7 @@
       setTimeout(()=>$('#egg').classList.remove('on'), 2600); }
   });
 
-  // 6c 的手指划过吹灭
-  stage.addEventListener('pointermove', e=>{
-    if(ORDER[at]!=='s8') return;
-    if(!$$('.flame.on').length) return;
-    blowScene();
-  }, {passive:true});
+  // 6c：吹灭改成「按住许愿」（见 startHold / blowScene）
 
   // ====== 再看一遍 ======
   $('#again').addEventListener('click', ()=>{
@@ -834,28 +915,21 @@
     Object.values(A).forEach(a=>{ a.pause(); a.currentTime=0; });
     $('#egg').classList.remove('on');
     $('#again').classList.remove('on');
-    $('#cake').classList.remove('up');
+    $('#s8').classList.remove('up');
     $$('.flame').forEach(f=>f.classList.remove('on'));
-    $$('#s8 b').forEach(b=>b.classList.remove('on'));
+    $$('#s8 .candle').forEach(c=>c.classList.remove('lit'));
+    $$('#s8 .chars b').forEach(b=>b.classList.remove('on'));
+    $('#wish').classList.remove('on');
+    $('#wish i').style.width = '0%';
+    lit = 0; songOn = false;
+    tapcue.textContent = '轻 点 继 续';
     $$('#s1 p').forEach(p=>p.classList.remove('in'));
     hide(ORDER[at]); at=0; show('gate');
     $('#ans').style.display='';
     $('#ans').value=''; tries=0; say('');
     var gh=$('#gate').querySelector('h1'); gh.classList.remove('ok'); gh.dataset.html=''; gh.textContent='今天是几月几号？';
     locked = true;
-    // ====== 自测：?auto=1 自动走完全片（不点，用来看有没有卡死）======
-  if(new URLSearchParams(location.search).get('auto')){
-    setTimeout(()=>{ go(ORDER.indexOf('s1')); }, 300);
-    let step = 0;
-    const timer = setInterval(()=>{
-      step++;
-      document.title = 'AT=' + ORDER[at] + ' step=' + step;
-      if(ORDER[at]==='s9'){ clearInterval(timer); return; }
-      advance(true);
-    }, 1600);
-  }
-
-  setDots(0);
+    setDots(0);
     dots.classList.remove('on');
     setTimeout(()=>$('#ans').focus(), 400);
   });
@@ -872,11 +946,9 @@
     at = ORDER.indexOf(dbg);
     show(dbg); onEnter(dbg);
     if(dbg==='s3'){ gridPaint(true); }
-    if(dbg==='s7'){ setTimeout(()=>$('#cake').classList.add('up'), 60); }
     if(dbg==='s8'){
-      show('s7'); $('#cake').classList.add('up');
-      setTimeout(()=>{ $$('.flame').forEach(f=>f.classList.add('on'));
-                       $$('#s8 b').forEach(b=>b.classList.add('on')); }, 80);
+      const n = parseInt(new URLSearchParams(location.search).get('lit') || '0', 10);
+      if(n > 0){ for(var k=0;k<Math.min(n,4);k++){ lightCandle($$('#s8 .candle')[k]); } }
     }
   }
 
@@ -885,18 +957,6 @@
     setTimeout(()=>{ go(ORDER.indexOf('s1')); }, 300);
     let step = 0;
     const timer = setInterval(()=>{
-      step++;
-      document.title = 'AT=' + ORDER[at] + ' step=' + step;
-      if(ORDER[at]==='s9'){ clearInterval(timer); return; }
-      advance(true);
-    }, 1600);
-  }
-
-  // ====== 自测：?auto=1 自动走完全片 ======
-  if(new URLSearchParams(location.search).get('auto')){
-    setTimeout(function(){ go(ORDER.indexOf('s1')); }, 300);
-    var step = 0;
-    var timer = setInterval(function(){
       step++;
       document.title = 'AT=' + ORDER[at] + ' step=' + step;
       if(ORDER[at]==='s9'){ clearInterval(timer); return; }
