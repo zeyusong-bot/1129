@@ -286,6 +286,22 @@
     white-space:nowrap;padding-left:.10em}
   #s9 .who{font-size:3vh;color:var(--pink-lt);letter-spacing:.3em;margin:0}
   #s9 .fin{font-size:2.3vh;color:#b98fa3;margin:0;letter-spacing:.08em}
+  /* 结尾：最后一颗流星扫亮标题 */
+  #big{transition:text-shadow .55s ease}
+  #big.lit{text-shadow:0 0 15vh rgba(255,190,215,.95), 0 0 3.4vh rgba(255,255,255,.85)}
+  #s9 .beam{position:absolute;top:50%;left:0;width:24vw;height:52vh;pointer-events:none;
+    transform:translate(-40vw,-50%);opacity:0;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,236,244,.42) 40%,
+      rgba(255,248,252,.88) 50%,rgba(255,236,244,.42) 60%,rgba(255,255,255,0));
+    -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 30%,#000 70%,rgba(0,0,0,0));
+    mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 30%,#000 70%,rgba(0,0,0,0));
+    mix-blend-mode:screen}
+  #s9 .beam.go{animation:beamSweep 1.55s cubic-bezier(.35,.1,.3,1) forwards}
+  @keyframes beamSweep{
+    0%{transform:translate(-40vw,-50%);opacity:0}
+    10%{opacity:1}
+    80%{opacity:1}
+    100%{transform:translate(96vw,-50%);opacity:0}}
   #egg{position:fixed;left:0;right:0;bottom:22vh;text-align:center;font-size:2.2vh;
     color:#ff9dc1;opacity:0;transition:opacity .5s ease;pointer-events:none;z-index:20}
   #egg.on{opacity:1}
@@ -425,6 +441,7 @@
   <div id="ripple"></div>
   <div id="egg">（小素龙：我已经很努力了）</div>
 </div>
+
 
 <script>
 (function(){
@@ -1160,6 +1177,7 @@ const MAIN_START = 2.0;
 
   var list = [];
   var acc = 0, last = 0, running = true;
+  var finaleOn = false, beamFired = false;
 
   // 低差异序列：让入场点沿「顶边 + 左边」这条折线均匀铺开，再加小抖动，避免聚堆也不像排格子
   var seq = 0;
@@ -1225,8 +1243,10 @@ const MAIN_START = 2.0;
 
   function step(dt){
     // 生成
-    acc += dt * P.rate;
-    while(acc >= 1){ acc -= 1; spawn(); }
+    if(!finaleOn){
+      acc += dt * P.rate;
+      while(acc >= 1){ acc -= 1; spawn(); }
+    }
 
     ctx.clearRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'lighter';
@@ -1235,6 +1255,10 @@ const MAIN_START = 2.0;
       var m = list[i];
       m.x += m.vx * dt;
       m.y += m.vy * dt;
+      if(m.big && !beamFired && m.y > H * 0.44){
+        beamFired = true;
+        try{ document.dispatchEvent(new CustomEvent('mt-beam')); }catch(_){}
+      }
       if(m.x - m.len > W + 40 || m.y - m.len > H + 40){ list.splice(i, 1); continue; }
 
       var hx = m.x, hy = m.y;
@@ -1301,6 +1325,22 @@ const MAIN_START = 2.0;
   // 先撒一批，避免开场空场
   for(var i = 0;i < 10;i++){ spawn(); }
 
+  // 结尾用：清场 → 静一会儿 → 放一颗又慢又长的大流星
+  window.__MTfinale = function(){
+    if(finaleOn) return;
+    finaleOn = true;
+    list.length = 0;
+    beamFired = false;
+    setTimeout(function(){
+      var a = 38 * Math.PI / 180;
+      list.push({
+        x: -0.10 * W, y: -0.06 * H,
+        vx: Math.cos(a) * 430, vy: Math.sin(a) * 430,
+        len: 700, w: 3.4, c: [255,236,244], ci: 5, sparks: [], big: true
+      });
+    }, 1500);
+  };
+
   if(reduce){
     // 尊重系统「减少动态效果」：只画一帧静态的
     step(0.016);
@@ -1319,5 +1359,44 @@ const MAIN_START = 2.0;
   });
 })();
 </script>
+
+<!-- 结尾：最后一颗流星（新增脚本，不改动原有主逻辑） -->
+<script>
+(function(){
+  var s9 = document.getElementById('s9');
+  var big = document.getElementById('big');
+  if(!s9 || !big) return;
+
+  var armed = false;
+
+  function beam(){
+    big.classList.add('lit');
+    var b = document.createElement('i');
+    b.className = 'beam';
+    s9.insertBefore(b, s9.firstChild);
+    void b.offsetWidth;
+    b.classList.add('go');
+    setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 1900);
+    setTimeout(function(){ big.classList.remove('lit'); }, 1500);
+  }
+  document.addEventListener('mt-beam', beam);
+
+  function arm(){
+    if(armed) return;
+    armed = true;
+    setTimeout(function(){
+      if(typeof window.__MTfinale === 'function') window.__MTfinale();
+    }, 5600);
+  }
+
+  function check(){ if(s9.classList.contains('on')) arm(); }
+  try{
+    var mo = new MutationObserver(check);
+    mo.observe(s9, {attributes:true, attributeFilter:['class']});
+  }catch(_){}
+  check();
+})();
+</script>
+
 </body>
 </html>
