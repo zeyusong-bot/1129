@@ -877,7 +877,7 @@ const MAIN_START = 2.0;
     h1.classList.add('ok');
     h1.dataset.html = '';
     h1.innerHTML = '答对啦，<br>但今天好像不太一样';
-    typeIn(h1, 0.10, 0.150);
+    typeIn(h1, 0.18, 0.230);
     $('#ans').style.display='none';
     const field = gate.querySelector('.field');
     if(field){ field.style.display='none'; }
@@ -885,7 +885,7 @@ const MAIN_START = 2.0;
     // 第一次手势已经发生 → 可以播音乐
     A.piano.pause(); A.vox.pause(); A.end.pause();
     A.main.currentTime = MAIN_START; A.main.volume = 0.85; play(A.main);
-    later(()=>{ go(ORDER.indexOf('s1')); }, 2400);
+    later(()=>{ go(ORDER.indexOf('s1')); }, 4600);
   }
 
   function tryUnlock(){
