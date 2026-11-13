@@ -359,6 +359,8 @@
   };
   // ====== 配置：她的生日（月 / 日）======
   const BIRTH = { m: 11, d: 29 };
+// 主曲从第几秒开始播：原曲 0-1.5s 是静音、2s 才起伴奏、约 9s 人声进
+const MAIN_START = 9.0;
   const TOTAL_STEPS = 7;
 
   // ======================================================================
@@ -882,7 +884,7 @@
     say('');
     // 第一次手势已经发生 → 可以播音乐
     A.piano.pause(); A.vox.pause(); A.end.pause();
-    A.main.currentTime = 0; A.main.volume = 0.85; play(A.main);
+    A.main.currentTime = MAIN_START; A.main.volume = 0.85; play(A.main);
     later(()=>{ go(ORDER.indexOf('s1')); }, 2400);
   }
 
