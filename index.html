@@ -62,6 +62,12 @@
   .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
        justify-content:center;gap:2.4vh;padding:0 6vw;text-align:center}
   .l1{font-size:3.5vh;font-weight:700;letter-spacing:.02em;margin:0}
+  /* 逐字出场 */
+  .ch{display:inline-block;opacity:0;will-change:transform,opacity;
+      animation:chIn .52s cubic-bezier(.2,.85,.3,1) forwards}
+  @keyframes chIn{from{opacity:0;transform:translateY(.5em) scale(.96)}
+                  to{opacity:1;transform:none}}
+  .tp{opacity:1!important;transform:none!important;transition:none!important}
   .l2{font-size:2.42vh;line-height:1.8;color:var(--dim);margin:0}
 
   /* ---------- 粉色标题卡 ---------- */
@@ -349,23 +355,61 @@
     onEnter(next);
   }
 
+  // ====== 逐字出场 ======
+  function splitChars(root, counter, step, base){
+    Array.from(root.childNodes).forEach(function(nd){
+      if(nd.nodeType === 3){
+        const frag = document.createDocumentFragment();
+        for(const ch of nd.nodeValue){
+          if(ch === '\n') continue;
+          const sp = document.createElement('span');
+          sp.className = 'ch';
+          sp.textContent = (ch === ' ') ? '\u00a0' : ch;
+          sp.style.animationDelay = (base + counter.i * step).toFixed(3) + 's';
+          counter.i++;
+          frag.appendChild(sp);
+        }
+        nd.parentNode.replaceChild(frag, nd);
+      } else if(nd.nodeType === 1 && nd.tagName !== 'BR'){
+        splitChars(nd, counter, step, base);
+      }
+    });
+  }
+  function typeIn(el, base, step){
+    if(!el) return;
+    if(el.dataset.html === undefined){ el.dataset.html = el.innerHTML; }
+    else if(el.dataset.html !== ''){ el.innerHTML = el.dataset.html; }
+    el.classList.add('tp');
+    splitChars(el, {i:0}, step == null ? 0.07 : step, base == null ? 0 : base);
+  }
+
   // ====== 每屏进入时做什么 ======
   function onEnter(id){
     clearTimers();
     tapcue.classList.remove('on');
     dots.classList.toggle('on', id!=='gate');
 
-    if(id==='gate'){ locked = true; setTimeout(()=>$('#ans').focus(), 600); return; }
+    if(id==='gate'){
+      locked = true;
+      var q = $('#gate h1');
+      q.classList.remove('ok');
+      if(q.dataset.html === ''){ q.dataset.html = undefined; }
+      typeIn(q, 0.55, 0.085);
+      setTimeout(()=>$('#ans').focus(), 900);
+      return;
+    }
 
     if(id==='s1'){
       locked = true;
       var ps = $$('#s1 p');
-      ps.forEach((p,i)=>later(()=>p.classList.add('in'), 500 + i*1500));
-      later(()=>{ locked=false; tapcue.classList.add('on'); }, 4600);
-        }
+      const S1T = [0.40, 1.75, 3.10];
+      ps.forEach((p,i)=>later(function(){ p.classList.add('in'); typeIn(p, 0, 0.085); }, S1T[i]*1000));
+      later(()=>{ locked=false; tapcue.classList.add('on'); }, 5600);
+    }
 
     if(id==='s2'){
       locked = true;
+      typeIn($('#s2 .t1'), 0.40, 0.078);
       var t2 = $$('#s2 .t2 span');
       t2.forEach((s,i)=>{ s.style.opacity=0; s.style.transform='translateY(14px)';
         later(()=>{ s.style.transition='opacity .6s ease, transform .6s cubic-bezier(.22,.9,.3,1)';
@@ -379,14 +423,8 @@
       var cells = $$('#grid i');
       cells.forEach(c=>c.classList.remove('lit'));
       gridPaint(false);
-      later(function(){
-  window.onerror = function(m, src, line){
-    document.title = 'ERR: ' + m;
-    var d = document.createElement('div');
-    d.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#300;color:#f9a;font:11px/1.5 monospace;padding:8px;white-space:pre-wrap';
-    d.textContent = m + '  @line ' + line;
-    document.body.appendChild(d);
-  }; gridPaint(true); }, 1500);
+      later(()=>gridPaint(true), 1500);
+      typeIn($('#s3 .l2'), 1.05, 0.055);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
       setDots(1);
     }
@@ -394,18 +432,23 @@
     if(id==='s4'){
       locked = true;
       spawnPearls();
+      typeIn($('#s4 .l1'), 0.45, 0.080);
+      typeIn($('#s4 .l2'), 1.45, 0.052);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
       setDots(2);
     }
 
     if(id==='s5'){
       locked = true;
+      typeIn($('#s5 .l1'), 0.45, 0.080);
+      typeIn($('#s5 .l2'), 1.45, 0.052);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2400);
       setDots(3);
     }
 
     if(id==='s6'){
       locked = true;
+      typeIn($('#s6 p'), 0.50, 0.090);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, 2200);
       setDots(4);
     }
@@ -422,7 +465,7 @@
       $$('.flame').forEach(f=>f.classList.remove('on'));
       $('#cap7').classList.remove('on');
       later(()=>cake.classList.add('up'), 260);
-      later(()=>$('#cap7').classList.add('on'), 2400);
+      later(function(){ $('#cap7').classList.add('on'); typeIn($('#cap7'), 0, 0.17); }, 2400);
       setDots(5);
       later(()=>advance(true), 7600);
     }
@@ -455,7 +498,9 @@
       tapcue.classList.remove('on');
       A.main.pause(); A.piano.pause(); A.vox.pause();
       A.end.currentTime = 0; A.end.volume = 0.0; play(A.end); fade(A.end, 0, 0.85, 1800);
-      later(()=>{ const b=$('#again'); b.classList.add('on'); b.style.opacity='1'; }, 2200);
+      typeIn($('#s9 .who'), 0.45, 0.15);
+      typeIn($('#s9 .fin'), 1.35, 0.075);
+      later(()=>{ const b=$('#again'); b.classList.add('on'); b.style.opacity='1'; }, 2600);
       setDots(6);
     }
   }
@@ -561,7 +606,9 @@
     const gate = $('#gate');
     const h1 = gate.querySelector('h1');
     h1.classList.add('ok');
+    h1.dataset.html = '';
     h1.innerHTML = '答对啦，<br>但今天好像不太一样';
+    typeIn(h1, 0.05, 0.10);
     $('#ans').style.display='none';
     const field = gate.querySelector('.field');
     if(field){ field.style.display='none'; }
@@ -613,7 +660,7 @@
     hide(ORDER[at]); at=0; show('gate');
     $('#ans').style.display='';
     $('#ans').value=''; tries=0; say('');
-    var gh=$('#gate').querySelector('h1'); gh.classList.remove('ok'); gh.textContent='今天是几月几号？';
+    var gh=$('#gate').querySelector('h1'); gh.classList.remove('ok'); gh.dataset.html=''; gh.textContent='今天是几月几号？';
     locked = true;
     // ====== 自测：?auto=1 自动走完全片（不点，用来看有没有卡死）======
   if(new URLSearchParams(location.search).get('auto')){
