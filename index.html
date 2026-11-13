@@ -123,13 +123,18 @@
   #s6 p{font-size:3.3vh;line-height:1.85;margin:0;letter-spacing:.05em;text-align:center}
 
   /* ---------- 玩笑收尾 ---------- */
-  #s7{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.6vh;padding:0 10vw}
+  #s7{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.6vh;padding:0 10vw}
   #s7 p{font-size:3.4vh;line-height:1.9;margin:0;letter-spacing:.05em;text-align:center}
-  #next{margin-top:1vh;background:transparent;border:1px solid rgba(255,214,230,.40);color:#ffd9e6;
-    font-family:inherit;font-size:2.2vh;padding:1.3vh 8vw;border-radius:99px;
-    letter-spacing:.22em;opacity:0;transition:opacity .6s ease}
-  #next.on{opacity:1}
-  #next:active{background:rgba(255,111,165,.16)}
+  #s7 #next{margin:0;background:none;border:none;padding:0;cursor:pointer;
+    width:54vw;max-width:300px;opacity:0;transform:scale(.94);
+    transition:opacity .6s ease,transform .35s cubic-bezier(.2,.85,.3,1)}
+  #s7 #next.on{opacity:1;transform:scale(1)}
+  #s7 #next:active{transform:scale(.95)}
+  #s7 #next img{display:block;width:100%;height:auto;pointer-events:none;
+    filter:drop-shadow(0 0 5vh rgba(255,111,165,.42))}
+  #s7 .giftTip{font-size:2.2vh;color:#ff9dc1;letter-spacing:.06em;margin:0;
+    opacity:0;transition:opacity .6s ease}
+  #s7 .giftTip.on{opacity:1}
 
   /* ---------- 蛋糕 ---------- */
   /* 6.5 素龙的篮子：五张表情包堆出来 */
@@ -345,8 +350,9 @@
 
     <!-- 7 玩笑收尾 -->
     <section id="s7">
-      <p>算啦算啦，<br>不和小王同学开玩笑了。</p>
-      <button id="next">继 续</button>
+      <p class="line">算啦算啦，<br>不和小王同学开玩笑了。</p>
+      <button id="next" aria-label="拆开惊喜"><img src="assets/web/btn.webp" alt=""></button>
+      <p class="giftTip">送你一个惊喜，点一下叭</p>
     </section>
 
   <!-- 8 点蜡烛：她点一根，亮一根，出来一个字 -->
@@ -598,9 +604,12 @@ const MAIN_START = 2.0;
 
     if(id==='s7'){
       locked = true;
+      var gtip = $('#s7 .giftTip');
       $('#next').classList.remove('on');
-      var f7 = typeIn($('#s7 p'), 0.60, 0.165);
-      later(()=>{ $('#next').classList.add('on'); }, f7 * 1000 + 350);
+      if(gtip){ gtip.classList.remove('on'); }
+      var f7 = typeIn($('#s7 .line'), 0.60, 0.165);
+      later(()=>{ $('#next').classList.add('on'); }, f7 * 1000 + 200);
+      later(()=>{ if(gtip && ORDER[at]==='s7') gtip.classList.add('on'); }, f7 * 1000 + 750);
       setDots(5);
     }
 
