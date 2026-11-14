@@ -282,26 +282,29 @@
   /* ---------- 落版 ---------- */
   #s9{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2vh;padding:0 8vw}
   #big{font-size:min(9.4vh,17vw);font-weight:900;letter-spacing:.10em;line-height:1.05;
-    text-align:center;color:#fff;text-shadow:0 0 8vh rgba(255,111,165,.5);margin:0;
+    text-align:center;color:#f6ecf1;text-shadow:0 0 8vh rgba(255,111,165,.5);margin:0;
     white-space:nowrap;padding-left:.10em}
   #s9 .who{font-size:3vh;color:var(--pink-lt);letter-spacing:.3em;margin:0}
   #s9 .fin{font-size:2.3vh;color:#b98fa3;margin:0;letter-spacing:.08em}
-  /* 结尾：最后一颗流星扫亮标题 */
-  #big{transition:text-shadow .55s ease}
+  /* 结尾：最后一颗流星扫过标题 —— 光只从字面上走过去 */
+  #big{position:relative;transition:text-shadow .6s ease}
   #big.lit{text-shadow:0 0 15vh rgba(255,190,215,.95), 0 0 3.4vh rgba(255,255,255,.85)}
-  #s9 .beam{position:absolute;top:50%;left:0;width:24vw;height:52vh;pointer-events:none;
-    transform:translate(-40vw,-50%);opacity:0;
-    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,236,244,.42) 40%,
-      rgba(255,248,252,.88) 50%,rgba(255,236,244,.42) 60%,rgba(255,255,255,0));
-    -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 30%,#000 70%,rgba(0,0,0,0));
-    mask-image:linear-gradient(180deg,rgba(0,0,0,0),#000 30%,#000 70%,rgba(0,0,0,0));
-    mix-blend-mode:screen}
-  #s9 .beam.go{animation:beamSweep 1.55s cubic-bezier(.35,.1,.3,1) forwards}
-  @keyframes beamSweep{
-    0%{transform:translate(-40vw,-50%);opacity:0}
-    10%{opacity:1}
-    80%{opacity:1}
-    100%{transform:translate(96vw,-50%);opacity:0}}
+  #big::after{content:'生日快乐';position:absolute;top:0;left:.10em;width:100%;
+    color:transparent;pointer-events:none;text-shadow:none;opacity:0;
+    background:linear-gradient(102deg,
+      rgba(200,232,255,0) 41%,
+      rgba(214,238,255,.5) 46%,
+      rgba(243,251,255,1) 50%,
+      rgba(214,238,255,.5) 54%,
+      rgba(200,232,255,0) 59%);
+    background-size:260% 100%;background-repeat:no-repeat;background-position:135% 0;
+    -webkit-background-clip:text;background-clip:text}
+  #big.sheen::after{animation:sheenSweep 2.7s cubic-bezier(.42,.02,.3,1) forwards}
+  @keyframes sheenSweep{
+    0%{opacity:0;background-position:135% 0}
+    14%{opacity:1}
+    86%{opacity:1}
+    100%{opacity:0;background-position:-80% 0}}
 
   /* 结尾交互：写一句愿望 */
   #s9 .starfield{position:absolute;inset:0;pointer-events:none}
@@ -1434,13 +1437,11 @@ const MAIN_START = 2.0;
 
   function beam(){
     big.classList.add('lit');
-    var b = document.createElement('i');
-    b.className = 'beam';
-    s9.insertBefore(b, s9.firstChild);
-    void b.offsetWidth;
-    b.classList.add('go');
-    setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 1900);
-    setTimeout(function(){ big.classList.remove('lit'); }, 1500);
+    big.classList.remove('sheen');
+    void big.offsetWidth;
+    big.classList.add('sheen');
+    setTimeout(function(){ big.classList.remove('sheen'); }, 2150);
+    setTimeout(function(){ big.classList.remove('lit'); }, 1600);
   }
   document.addEventListener('mt-beam', beam);
 
