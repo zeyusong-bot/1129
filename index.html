@@ -302,6 +302,42 @@
     10%{opacity:1}
     80%{opacity:1}
     100%{transform:translate(96vw,-50%);opacity:0}}
+
+  /* 结尾交互：写一句愿望 */
+  #wishbox{position:absolute;left:0;right:0;bottom:13vh;display:flex;flex-direction:column;
+    align-items:center;gap:1.5vh;padding:0 10vw;opacity:0;transform:translateY(1.6vh);
+    transition:opacity .9s ease, transform .9s ease;pointer-events:none}
+  #wishbox.on{opacity:1;transform:none;pointer-events:auto}
+  #wishbox.focus{bottom:auto;top:52vh;transform:translateY(-50%)}
+  #wishbox .wtip{font-size:2.3vh;color:#ffb8d2;margin:0;letter-spacing:.06em;text-align:center}
+  #wtext{width:100%;max-width:78vw;background:transparent;border:none;
+    border-bottom:1px solid rgba(255,214,230,.30);color:#ffe3ee;font-family:inherit;
+    font-size:2.5vh;text-align:center;padding:1.1vh 0;outline:none;caret-color:#ff6fa5}
+  #wtake{background:transparent;border:1px solid rgba(255,214,230,.42);color:#ffd9e6;
+    font-family:inherit;font-size:2.2vh;padding:1.1vh 7vw;border-radius:99px;letter-spacing:.24em}
+  #wtake:active{background:rgba(255,111,165,.18)}
+  #wishbox .wnote{font-size:1.75vh;color:rgba(255,214,230,.34);margin:0;text-align:center}
+  #wishbox.done .wtip,#wishbox.done #wtext,#wishbox.done #wtake{opacity:0;pointer-events:none;
+    transition:opacity .6s ease}
+  #s9 .wfly{position:absolute;left:50%;bottom:20vh;transform:translate(-50%,0);
+    font-size:2.5vh;color:#ffe3ee;letter-spacing:.05em;white-space:nowrap;
+    opacity:0;pointer-events:none}
+  #s9 .wfly.go{animation:wflyUp 2.8s cubic-bezier(.3,.1,.4,1) forwards}
+  @keyframes wflyUp{
+    0%{opacity:0;transform:translate(-50%,0) scale(1)}
+    15%{opacity:1}
+    70%{opacity:.85;transform:translate(-8%,-38vh) scale(.62)}
+    100%{opacity:0;transform:translate(18%,-62vh) scale(.12)}}
+  #s9 .wstar{position:absolute;left:76%;top:22%;width:1.6vh;height:1.6vh;border-radius:50%;
+    background:radial-gradient(circle,#fff6fa,#ff9dc1 55%,rgba(255,157,193,0) 72%);
+    opacity:0;pointer-events:none}
+  #s9 .wstar.on{animation:wstarIn 3.4s ease-out forwards}
+  @keyframes wstarIn{
+    0%{opacity:0;transform:scale(.3)}
+    35%{opacity:1;transform:scale(1)}
+    60%{opacity:.5;transform:scale(.86)}
+    75%{opacity:1;transform:scale(1)}
+    100%{opacity:.75;transform:scale(.92)}}
   #egg{position:fixed;left:0;right:0;bottom:22vh;text-align:center;font-size:2.2vh;
     color:#ff9dc1;opacity:0;transition:opacity .5s ease;pointer-events:none;z-index:20}
   #egg.on{opacity:1}
@@ -433,6 +469,12 @@
     <div id="big">生日快乐</div>
     <p class="who">小王同学</p>
     <p class="fin">技术有限，心意没有。</p>
+    <div id="wishbox" aria-hidden="true">
+      <p class="wtip">写一句愿望吧。</p>
+      <input id="wtext" maxlength="32" autocomplete="off" inputmode="text">
+      <button id="wtake">收 下</button>
+      <p class="wnote" id="wnote">只存在你这台手机里，我看不到。</p>
+    </div>
   </section>
 
   <div id="dots"></div>
@@ -1388,6 +1430,75 @@ const MAIN_START = 2.0;
       if(typeof window.__MTfinale === 'function') window.__MTfinale();
     }, 5600);
   }
+
+  function check(){ if(s9.classList.contains('on')) arm(); }
+  try{
+    var mo = new MutationObserver(check);
+    mo.observe(s9, {attributes:true, attributeFilter:['class']});
+  }catch(_){}
+  check();
+})();
+</script>
+
+<!-- 结尾交互：写一句愿望（新增脚本，不改动原有主逻辑） -->
+<script>
+(function(){
+  var s9 = document.getElementById('s9');
+  var box = document.getElementById('wishbox');
+  var inp = document.getElementById('wtext');
+  var btn = document.getElementById('wtake');
+  var note = document.getElementById('wnote');
+  if(!s9 || !box || !inp || !btn || !note) return;
+
+  var tip = box.querySelector('.wtip');
+  var KEY = 'xwt_wish_v1';
+  var armed = false, sent = false;
+
+  function load(){ try{ return localStorage.getItem(KEY) || ''; }catch(_){ return ''; } }
+  function save(v){ try{ localStorage.setItem(KEY, v); return true; }catch(_){ return false; } }
+
+  function arm(){
+    if(armed) return;
+    armed = true;
+    setTimeout(function(){
+      var old = load();
+      if(old){
+        tip.textContent = '上次你写的是：' + old;
+        inp.value = old;
+      }
+      box.classList.add('on');
+    }, 11500);
+  }
+
+  inp.addEventListener('focus', function(){ box.classList.add('focus'); });
+  inp.addEventListener('blur',  function(){ box.classList.remove('focus'); });
+
+  function submit(){
+    if(sent) return;
+    var v = (inp.value || '').replace(/\s+/g, ' ').trim();
+    if(!v) return;
+    sent = true;
+    var ok = save(v);
+    box.classList.add('done');
+
+    var fly = document.createElement('div');
+    fly.className = 'wfly';
+    fly.textContent = v;
+    s9.appendChild(fly);
+    void fly.offsetWidth;
+    fly.classList.add('go');
+
+    var star = document.createElement('i');
+    star.className = 'wstar';
+    s9.appendChild(star);
+    setTimeout(function(){ star.classList.add('on'); }, 1500);
+
+    note.textContent = ok ? '替你收好了 · 只存在你这台手机里'
+                          : '替你收好了 · 这台手机的浏览器不让存，但我看见了';
+  }
+
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
 
   function check(){ if(s9.classList.contains('on')) arm(); }
   try{
