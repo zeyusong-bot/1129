@@ -331,15 +331,16 @@
     transition:opacity .28s ease, transform .28s ease;z-index:6}
   #wtipbox.on{opacity:1;transform:none}
   #s9 .star.sel{filter:brightness(1.45) drop-shadow(0 0 1.2vh rgba(255,220,238,.65))}
-  #s9 #starcue{position:absolute;left:0;right:0;bottom:3.4vh;margin:0;text-align:center;
-    font-size:1.8vh;color:rgba(255,214,230,.44);letter-spacing:.05em;
+  #s9 #starcue{margin:.1vh 0 0;text-align:center;
+    font-size:1.78vh;color:rgba(255,214,230,.46);letter-spacing:.05em;
     opacity:0;transition:opacity .9s ease;pointer-events:none}
   #s9 #starcue.on{opacity:1}
+  #wishbox.focus #starcue{opacity:0}
   @keyframes starIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
     58%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}
     100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
   @keyframes starTw{0%,100%{opacity:.9}50%{opacity:.5}}
-  #wishbox{position:absolute;left:0;right:0;bottom:13vh;display:flex;flex-direction:column;
+  #wishbox{position:absolute;left:0;right:0;bottom:10vh;display:flex;flex-direction:column;
     align-items:center;gap:1.5vh;padding:0 10vw;opacity:0;transform:translateY(1.6vh);
     transition:opacity .9s ease, transform .9s ease;pointer-events:none}
   #wishbox.on{opacity:1;transform:none;pointer-events:auto}
@@ -513,9 +514,9 @@
       <input id="wtext" maxlength="32" autocomplete="off" inputmode="text">
       <button id="wtake">收 下</button>
       <p class="wnote" id="wnote">只存在你这台手机里，我看不到。</p>
+      <p id="starcue">点小星星可以看到你的愿望哦</p>
     </div>
     <div id="wtipbox" aria-hidden="true"></div>
-    <p id="starcue">点小星星可以看到你的愿望哦</p>
   </section>
 
   <div id="dots"></div>
