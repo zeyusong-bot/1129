@@ -304,19 +304,29 @@
     100%{transform:translate(96vw,-50%);opacity:0}}
 
   /* 结尾交互：写一句愿望 */
+  #s9 .starfield{position:absolute;inset:0;pointer-events:none}
+  #s9 .star{position:absolute;width:1.9vh;height:1.9vh;border-radius:50%;
+    transform:translate(-50%,-50%) scale(.2);opacity:0;
+    box-shadow:0 0 .7vh rgba(255,205,228,.55);
+    background:radial-gradient(circle,#ffffff 0%,var(--sc,#ff9dc1) 44%,rgba(255,157,193,0) 72%)}
+  @keyframes starIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
+    58%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}
+    100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
+  @keyframes starTw{0%,100%{opacity:.9}50%{opacity:.5}}
   #wishbox{position:absolute;left:0;right:0;bottom:13vh;display:flex;flex-direction:column;
     align-items:center;gap:1.5vh;padding:0 10vw;opacity:0;transform:translateY(1.6vh);
     transition:opacity .9s ease, transform .9s ease;pointer-events:none}
   #wishbox.on{opacity:1;transform:none;pointer-events:auto}
   #wishbox.focus{bottom:auto;top:52vh;transform:translateY(-50%)}
-  #wishbox .wtip{font-size:2.3vh;color:#ffb8d2;margin:0;letter-spacing:.06em;text-align:center}
+  #wishbox .wtip{font-size:2.2vh;color:#ffb8d2;margin:0;letter-spacing:.06em;
+    text-align:center;line-height:1.62}
   #wtext{width:100%;max-width:78vw;background:transparent;border:none;
     border-bottom:1px solid rgba(255,214,230,.30);color:#ffe3ee;font-family:inherit;
     font-size:2.5vh;text-align:center;padding:1.1vh 0;outline:none;caret-color:#ff6fa5}
   #wtake{background:transparent;border:1px solid rgba(255,214,230,.42);color:#ffd9e6;
     font-family:inherit;font-size:2.2vh;padding:1.1vh 7vw;border-radius:99px;letter-spacing:.24em}
   #wtake:active{background:rgba(255,111,165,.18)}
-  #wishbox .wnote{font-size:1.75vh;color:rgba(255,214,230,.34);margin:0;text-align:center}
+  #wishbox .wnote{font-size:1.9vh;color:rgba(255,214,230,.56);margin:0;text-align:center}
   #wishbox.done .wtip,#wishbox.done #wtext,#wishbox.done #wtake{opacity:0;pointer-events:none;
     transition:opacity .6s ease}
   #s9 .wfly{position:absolute;left:50%;bottom:20vh;transform:translate(-50%,0);
@@ -466,6 +476,7 @@
 
   <!-- 9 落版 -->
   <section id="s9">
+    <div class="starfield" id="starfield" aria-hidden="true"></div>
     <div id="big">生日快乐</div>
     <p class="who">小王同学</p>
     <p class="fin">技术有限，心意没有。</p>
@@ -1451,20 +1462,64 @@ const MAIN_START = 2.0;
   if(!s9 || !box || !inp || !btn || !note) return;
 
   var tip = box.querySelector('.wtip');
-  var KEY = 'xwt_wish_v1';
+  var field = document.getElementById('starfield');
+  var KEY = 'xwt_wish_v1';       // 旧版单条，用于迁移
+  var SK  = 'xwt_stars_v1';      // 新的星表：[{t,x,y,c}]
+  var MAXSTAR = 12;
   var armed = false, sent = false;
 
-  function load(){ try{ return localStorage.getItem(KEY) || ''; }catch(_){ return ''; } }
-  function save(v){ try{ localStorage.setItem(KEY, v); return true; }catch(_){ return false; } }
+  var PALETTE = ['#ffd6e6', '#ff9dc1', '#d9b3ff', '#fff0f6', '#ffc2a8'];
+
+  function getStars(){
+    var a = [];
+    try{
+      a = JSON.parse(localStorage.getItem(SK) || '[]');
+      if(!(a instanceof Array)) a = [];
+    }catch(_){ a = []; }
+    // 迁移旧版单条愿望
+    if(!a.length){
+      try{
+        var old = localStorage.getItem(KEY);
+        if(old) a = [{ t: old, x: 68 + Math.random() * 18, y: 12 + Math.random() * 16, c: 1 }];
+      }catch(_){}
+    }
+    return a;
+  }
+  function setStars(a){
+    try{ localStorage.setItem(SK, JSON.stringify(a.slice(-MAXSTAR))); return true; }
+    catch(_){ return false; }
+  }
+
+  function makeStar(s, delay){
+    if(!field) return null;
+    var d = document.createElement('i');
+    d.className = 'star';
+    d.style.left = s.x + '%';
+    d.style.top  = s.y + '%';
+    d.style.setProperty('--sc', PALETTE[s.c % PALETTE.length] || PALETTE[1]);
+    var tw = (3.2 + Math.random() * 2.4).toFixed(1);
+    d.style.animation = 'starIn .95s cubic-bezier(.2,1.5,.4,1) ' + delay +
+      'ms forwards, starTw ' + tw + 's ease-in-out ' + (delay + 900) + 'ms infinite';
+    field.appendChild(d);
+    return d;
+  }
+
+  function renderAll(stagger){
+    var a = getStars();
+    for(var i = 0; i < a.length; i++){
+      makeStar(a[i], stagger ? 220 * i : 0);
+    }
+    return a;
+  }
 
   function arm(){
     if(armed) return;
     armed = true;
     setTimeout(function(){
-      var old = load();
-      if(old){
-        tip.textContent = '上次你写的是：' + old;
-        inp.value = old;
+      var a = renderAll(true);
+      if(a.length){
+        tip.innerHTML = '你写过 ' + a.length + ' 个愿望<br>都还挂在天上';
+        inp.setAttribute('placeholder', '再写一句？');
       }
       box.classList.add('on');
     }, 11500);
@@ -1478,7 +1533,17 @@ const MAIN_START = 2.0;
     var v = (inp.value || '').replace(/\s+/g, ' ').trim();
     if(!v) return;
     sent = true;
-    var ok = save(v);
+
+    var a = getStars();
+    var s = {
+      t: v,
+      x: 8 + Math.random() * 84,
+      y: 6 + Math.random() * 28,
+      c: (Math.random() * PALETTE.length) | 0
+    };
+    a.push(s);
+    var ok = setStars(a);
+
     box.classList.add('done');
 
     var fly = document.createElement('div');
@@ -1488,19 +1553,19 @@ const MAIN_START = 2.0;
     void fly.offsetWidth;
     fly.classList.add('go');
 
-    var star = document.createElement('i');
-    star.className = 'wstar';
-    s9.appendChild(star);
-    setTimeout(function(){ star.classList.add('on'); }, 1500);
+    setTimeout(function(){ makeStar(s, 0); }, 1250);
 
-    note.textContent = ok ? '替你收好了 · 只存在你这台手机里'
-                          : '替你收好了 · 这台手机的浏览器不让存，但我看见了';
+    note.textContent = ok ? '挂上去了 · 只存在你这台手机里'
+                          : '挂上去了 · 这台手机的浏览器不让存，但我看见了';
   }
 
   btn.addEventListener('click', submit);
   inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
 
-  function check(){ if(s9.classList.contains('on')) arm(); }
+  function check(){
+    if(s9.classList.contains('on')) arm();
+    else if(armed && !sent) renderAll(false);
+  }
   try{
     var mo = new MutationObserver(check);
     mo.observe(s9, {attributes:true, attributeFilter:['class']});
