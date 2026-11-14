@@ -320,6 +320,17 @@
   #s9 .star::after{width:1.3px;height:132%;
     background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,250,253,.95) 50%,rgba(255,255,255,0))}
   @keyframes twk{0%,100%{opacity:.62}50%{opacity:1}}
+  #s9 .star .hit{position:absolute;left:50%;top:50%;width:7.2vh;height:7.2vh;
+    transform:translate(-50%,-50%);border-radius:50%;pointer-events:auto;cursor:pointer}
+  #wtipbox{position:absolute;left:0;top:0;max-width:64vw;padding:1.15vh 1.7vh;border-radius:1.5vh;
+    background:rgba(30,15,24,.88);border:1px solid rgba(255,214,230,.22);
+    color:#ffe4ee;font-size:1.95vh;line-height:1.5;letter-spacing:.04em;text-align:center;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    box-shadow:0 1vh 3vh rgba(0,0,0,.45);
+    opacity:0;transform:translateY(.7vh) scale(.97);pointer-events:none;
+    transition:opacity .28s ease, transform .28s ease;z-index:6}
+  #wtipbox.on{opacity:1;transform:none}
+  #s9 .star.sel{filter:brightness(1.45) drop-shadow(0 0 1.2vh rgba(255,220,238,.65))}
   @keyframes starIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
     58%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}
     100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
@@ -499,6 +510,7 @@
       <button id="wtake">收 下</button>
       <p class="wnote" id="wnote">只存在你这台手机里，我看不到。</p>
     </div>
+    <div id="wtipbox" aria-hidden="true"></div>
   </section>
 
   <div id="dots"></div>
@@ -1510,6 +1522,10 @@ const MAIN_START = 2.0;
     d.style.setProperty('--sc', PALETTE[s.c % PALETTE.length] || PALETTE[1]);
     d.style.setProperty('--tw', (Math.random() * 2.6).toFixed(2) + 's');
     d.style.animation = 'starIn .95s cubic-bezier(.2,1.5,.4,1) ' + delay + 'ms forwards';
+    d.dataset.t = s.t || '';
+    var hit = document.createElement('b');
+    hit.className = 'hit';
+    d.appendChild(hit);
     field.appendChild(d);
     return d;
   }
@@ -1520,6 +1536,52 @@ const MAIN_START = 2.0;
       makeStar(a[i], stagger ? 220 * i : 0);
     }
     return a;
+  }
+
+  // 点星星看愿望
+  var tipbox = document.getElementById('wtipbox');
+  var tipTimer = null;
+  function showTip(el){
+    var t = el && el.dataset ? (el.dataset.t || '') : '';
+    if(!t || !tipbox) return;
+    var all = document.querySelectorAll('#s9 .star.sel');
+    for(var i = 0; i < all.length; i++) all[i].classList.remove('sel');
+    if(el && el.classList) el.classList.add('sel');
+    tipbox.textContent = t;
+    tipbox.classList.add('on');
+    var r = el.getBoundingClientRect();
+    var sr = s9.getBoundingClientRect();
+    var tw = tipbox.offsetWidth, th = tipbox.offsetHeight;
+    var cx = r.left + r.width / 2 - sr.left;
+    var top = r.bottom - sr.top + 10;
+    if(top + th > sr.height - 12) top = r.top - sr.top - th - 10;
+    if(top < 12) top = 12;
+    var left = cx - tw / 2;
+    if(left < 12) left = 12;
+    if(left > sr.width - tw - 12) left = sr.width - tw - 12;
+    tipbox.style.left = left + 'px';
+    tipbox.style.top = top + 'px';
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(function(){
+      tipbox.classList.remove('on');
+      var a = document.querySelectorAll('#s9 .star.sel');
+      for(var i = 0; i < a.length; i++) a[i].classList.remove('sel');
+    }, 3800);
+  }
+  if(tipbox && field){
+    field.addEventListener('click', function(e){
+      var h = e.target && e.target.closest ? e.target.closest('.hit') : null;
+      if(!h) return;
+      e.stopPropagation();
+      showTip(h.parentNode);
+    });
+  }
+  var stageEl = document.getElementById('stage');
+  if(stageEl && tipbox){
+    stageEl.addEventListener('pointerdown', function(e){
+      var h = e.target && e.target.closest ? e.target.closest('.hit') : null;
+      if(!h) tipbox.classList.remove('on');
+    }, true);
   }
 
   function arm(){
