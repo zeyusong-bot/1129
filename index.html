@@ -317,7 +317,9 @@
     align-items:center;gap:1.5vh;padding:0 10vw;opacity:0;transform:translateY(1.6vh);
     transition:opacity .9s ease, transform .9s ease;pointer-events:none}
   #wishbox.on{opacity:1;transform:none;pointer-events:auto}
-  #wishbox.focus{bottom:auto;top:52vh;transform:translateY(-50%)}
+  #wishbox.focus{bottom:auto;top:44vh;transform:translateY(-50%)}
+  #s9.focusing #big,#s9.focusing .who,#s9.focusing .fin{opacity:0;visibility:hidden;
+    transition:opacity .3s ease, visibility .3s}
   #wishbox .wtip{font-size:2.2vh;color:#ffb8d2;margin:0;letter-spacing:.06em;
     text-align:center;line-height:1.62}
   #wtext{width:100%;max-width:78vw;background:transparent;border:none;
@@ -1525,8 +1527,8 @@ const MAIN_START = 2.0;
     }, 11500);
   }
 
-  inp.addEventListener('focus', function(){ box.classList.add('focus'); });
-  inp.addEventListener('blur',  function(){ box.classList.remove('focus'); });
+  inp.addEventListener('focus', function(){ box.classList.add('focus'); s9.classList.add('focusing'); });
+  inp.addEventListener('blur',  function(){ box.classList.remove('focus'); s9.classList.remove('focusing'); });
 
   function submit(){
     if(sent) return;
@@ -1555,12 +1557,16 @@ const MAIN_START = 2.0;
 
     setTimeout(function(){ makeStar(s, 0); }, 1250);
 
+    try{ inp.blur(); }catch(_){}
+
     note.textContent = ok ? '挂上去了 · 只存在你这台手机里'
                           : '挂上去了 · 这台手机的浏览器不让存，但我看见了';
   }
 
   btn.addEventListener('click', submit);
-  inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
+  // 手机上第一次点按钮常被用来收键盘，这里用 pointerdown 立刻提交，避免要点两下
+  btn.addEventListener('pointerdown', function(e){ e.preventDefault(); submit(); });
+  inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ submit(); inp.blur(); } });
 
   function check(){
     if(s9.classList.contains('on')) arm();
