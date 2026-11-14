@@ -305,10 +305,18 @@
 
   /* 结尾交互：写一句愿望 */
   #s9 .starfield{position:absolute;inset:0;pointer-events:none}
-  #s9 .star{position:absolute;width:1.9vh;height:1.9vh;border-radius:50%;
+  #s9 .star{position:absolute;width:2.8vh;height:2.8vh;
     transform:translate(-50%,-50%) scale(.2);opacity:0;
-    box-shadow:0 0 .7vh rgba(255,205,228,.55);
-    background:radial-gradient(circle,#ffffff 0%,var(--sc,#ff9dc1) 44%,rgba(255,157,193,0) 72%)}
+    background:radial-gradient(circle,#ffffff 0%,rgba(255,244,249,.98) 10%,
+      var(--sc,#ff9dc1) 24%,rgba(255,157,193,0) 56%)}
+  #s9 .star::before,#s9 .star::after{content:'';position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%);border-radius:50%;
+    animation:twk 3.6s ease-in-out infinite;animation-delay:var(--tw,0s)}
+  #s9 .star::before{width:132%;height:1.3px;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,250,253,.95) 50%,rgba(255,255,255,0))}
+  #s9 .star::after{width:1.3px;height:132%;
+    background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,250,253,.95) 50%,rgba(255,255,255,0))}
+  @keyframes twk{0%,100%{opacity:.62}50%{opacity:1}}
   @keyframes starIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
     58%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}
     100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
@@ -1499,9 +1507,8 @@ const MAIN_START = 2.0;
     d.style.left = s.x + '%';
     d.style.top  = s.y + '%';
     d.style.setProperty('--sc', PALETTE[s.c % PALETTE.length] || PALETTE[1]);
-    var tw = (3.2 + Math.random() * 2.4).toFixed(1);
-    d.style.animation = 'starIn .95s cubic-bezier(.2,1.5,.4,1) ' + delay +
-      'ms forwards, starTw ' + tw + 's ease-in-out ' + (delay + 900) + 'ms infinite';
+    d.style.setProperty('--tw', (Math.random() * 2.6).toFixed(2) + 's');
+    d.style.animation = 'starIn .95s cubic-bezier(.2,1.5,.4,1) ' + delay + 'ms forwards';
     field.appendChild(d);
     return d;
   }
