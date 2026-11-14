@@ -331,6 +331,10 @@
     transition:opacity .28s ease, transform .28s ease;z-index:6}
   #wtipbox.on{opacity:1;transform:none}
   #s9 .star.sel{filter:brightness(1.45) drop-shadow(0 0 1.2vh rgba(255,220,238,.65))}
+  #s9 #starcue{position:absolute;left:0;right:0;bottom:3.4vh;margin:0;text-align:center;
+    font-size:1.8vh;color:rgba(255,214,230,.44);letter-spacing:.05em;
+    opacity:0;transition:opacity .9s ease;pointer-events:none}
+  #s9 #starcue.on{opacity:1}
   @keyframes starIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
     58%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}
     100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
@@ -511,6 +515,7 @@
       <p class="wnote" id="wnote">只存在你这台手机里，我看不到。</p>
     </div>
     <div id="wtipbox" aria-hidden="true"></div>
+    <p id="starcue">点小星星可以看到你的愿望哦</p>
   </section>
 
   <div id="dots"></div>
@@ -1592,6 +1597,8 @@ const MAIN_START = 2.0;
       if(a.length){
         tip.innerHTML = '你写过 ' + a.length + ' 个愿望<br>都还挂在天上';
         inp.setAttribute('placeholder', '再写一句？');
+        var cue = document.getElementById('starcue');
+        if(cue) cue.classList.add('on');
       }
       box.classList.add('on');
     }, 11500);
@@ -1625,7 +1632,11 @@ const MAIN_START = 2.0;
     void fly.offsetWidth;
     fly.classList.add('go');
 
-    setTimeout(function(){ makeStar(s, 0); }, 1250);
+    setTimeout(function(){
+      makeStar(s, 0);
+      var cue = document.getElementById('starcue');
+      if(cue) cue.classList.add('on');
+    }, 1250);
 
     try{ inp.blur(); }catch(_){}
 
