@@ -1731,8 +1731,10 @@ const MAIN_START = 2.0;
   function guard(e){
     if(done) return;
     if(!sec.classList.contains('on')) return;   // 只在这一幕里拦
-    if(wrap.contains(e.target)) return;         // 点图片/碎片交给它们自己的 handler
-    e.stopPropagation();                        // 其余点击一律不推进，防止绕过拼图
+    var t = e.target;
+    // 只有「点龙」和「拖碎片」放行，其余（含九宫格板、mtwrap 空白）一律不推进
+    if(t === img || (t && t.closest && t.closest('.pz'))) return;
+    e.stopPropagation();
   }
 
   function shatter(){
@@ -1896,9 +1898,10 @@ const MAIN_START = 2.0;
   }
 
   img.addEventListener('pointerdown', function(e){
-    if(!armed || broken || done) return;
+    if(broken || done) return;
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation();            // 点龙永远不推进，没到时间也只是没反应
+    if(!armed) return;
     shatter();
   });
 
