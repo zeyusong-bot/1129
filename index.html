@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -160,8 +160,22 @@
   /* ---------- 小素龙 ---------- */
   #s5{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:0 6vw;text-align:center}
   #s5 .l1{line-height:1.55}
-  #s5 img{max-width:84vw;max-height:50vh;display:block;
+  #s5 img{max-width:88vw;max-height:52vh;display:block;
     filter:drop-shadow(0 0 8vh rgba(255,111,165,.2))}
+  #s5 #mtwrap{position:relative;display:inline-block;line-height:0}
+  #s5.broken .l1,#s5.broken .l2{opacity:0!important;visibility:hidden}
+  #s5 .pzhint{position:absolute;left:6vw;right:6vw;bottom:11vh;margin:0;text-align:center;
+    font-size:2.1vh;line-height:1.75;color:#ff9dc1;letter-spacing:.06em;
+    opacity:0;transition:opacity .6s ease;pointer-events:none}
+  #s5 .pzhint.on{opacity:1}
+  #s5 .pz{position:absolute;background-repeat:no-repeat;border-radius:3px;
+    box-shadow:0 .5vh 1.6vh rgba(0,0,0,.5);will-change:transform;touch-action:none;
+    transition:transform .6s cubic-bezier(.2,.9,.3,1)}
+  #s5 .pz.ok{box-shadow:none;border-radius:0}
+  #s5 img.ptap{animation:ptapH 1.9s ease-in-out infinite}
+  @keyframes ptapH{0%,100%{transform:translateY(0)}50%{transform:translateY(-.7vh)}}
+  #s5 #mtwrap.blink{animation:blinkNod .46s ease-in-out 2}
+  @keyframes blinkNod{0%,100%{transform:scaleY(1)}45%{transform:scaleY(.86)}}
 
   /* ---------- 收束 ---------- */
   #s6{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:0 10vw}
@@ -467,9 +481,10 @@
 
   <!-- 5 小素龙 -->
   <section id="s5">
-    <img src="assets/web/s6.webp" alt="">
+    <div id="mtwrap"><img id="dragon" src="assets/web/s6sq.webp" alt=""></div>
     <p class="l1">我研究了一下小素龙，<br>但好像搞砸了。</p>
     <p class="l2">它现在变成了<br>一个不能动的粉色小土豆。</p>
+    <p class="pzhint" id="pzhint"></p>
   </section>
 
   <!-- 6 收束 -->
@@ -1174,6 +1189,9 @@ const MAIN_START = 2.0;
     }, 1600);
   }
 
+  // 给新增模块一个「推进到下一幕」的入口（不改动原有逻辑）
+  window.__adv = function(){ try{ advance(false); }catch(_){} };
+
   setDots(0);
 })();
 </script>
@@ -1663,5 +1681,186 @@ const MAIN_START = 2.0;
 })();
 </script>
 
+<!-- 小素龙碎裂拼图（新增脚本，不改动原有主逻辑） -->
+<script>
+(function(){
+  var sec = document.getElementById('s5');
+  var wrap = document.getElementById('mtwrap');
+  var img = document.getElementById('dragon');
+  var hint = document.getElementById('pzhint');
+  var stage = document.getElementById('stage');
+  if(!sec || !wrap || !img || !hint || !stage) return;
+
+  var COLS = 3, ROWS = 3;
+  var armed = false, broken = false, done = false;
+  var pieces = [], timers = [];
+
+  function later(fn, ms){ var t = setTimeout(fn, ms); timers.push(t); return t; }
+  function clearAll(){ timers.forEach(clearTimeout); timers = []; }
+
+  function arm(){
+    if(armed || broken || done) return;
+    armed = true;
+    hint.innerHTML = '点它一下试试';
+    hint.classList.add('on');
+    img.classList.add('ptap');
+    var tc0 = document.getElementById('tap');
+    if(tc0) tc0.classList.remove('on');
+  }
+
+  function guard(e){
+    if(done) return;
+    if(!broken && !armed) return;        // 还没提示，按原来的点击推进
+    if(wrap.contains(e.target)) return;  // 点图片/碎片交给它们自己的 handler
+    e.stopPropagation();
+  }
+
+  function shatter(){
+    if(broken || done) return;
+    broken = true; armed = false;
+    img.classList.remove('ptap');
+    var r = img.getBoundingClientRect();
+    var W = r.width, H = r.height;
+    if(!W || !H) return;
+    img.style.visibility = 'hidden';
+    sec.classList.add('broken');
+    var tc = document.getElementById('tap');
+    if(tc) tc.classList.remove('on');
+    hint.innerHTML = '……散了。<br>它本来就不太结实。';
+
+    var pw = W / COLS, ph = H / ROWS;
+    for(var y = 0; y < ROWS; y++){
+      for(var x = 0; x < COLS; x++){
+        var d = document.createElement('i');
+        d.className = 'pz';
+        d.style.width = pw + 'px';
+        d.style.height = ph + 'px';
+        d.style.left = (x * pw) + 'px';
+        d.style.top = (y * ph) + 'px';
+        d.style.backgroundImage = "url('assets/web/s6sq.webp')";
+        d.style.backgroundSize = W + 'px ' + H + 'px';
+        d.style.backgroundPosition = (-(x * pw)) + 'px ' + (-(y * ph)) + 'px';
+        d.dataset.tx = '0'; d.dataset.ty = '0'; d.dataset.rot = '0';
+        wrap.appendChild(d);
+        pieces.push(d);
+      }
+    }
+
+    pieces.forEach(function(d, i){
+      var ang = (i / pieces.length) * Math.PI * 2 + Math.random() * 0.7;
+      var base = Math.min(W, H) * 0.42;
+      var dist = base * (0.75 + Math.random() * 0.5);
+      var tx = Math.cos(ang) * dist;
+      var ty = Math.sin(ang) * dist * 0.8;
+      var rot = (Math.random() * 2 - 1) * 34;
+
+      // 别飞出屏幕
+      var b0 = d.getBoundingClientRect();
+      var vw = window.innerWidth, vh = window.innerHeight;
+      var minTx = 8 - b0.left, maxTx = vw - b0.right - 8;
+      var minTy = 8 - b0.top, maxTy = vh - b0.bottom - 8;
+      if(tx < minTx) tx = minTx;
+      if(tx > maxTx) tx = maxTx;
+      if(ty < minTy) ty = minTy;
+      if(ty > maxTy) ty = maxTy;
+
+      d.dataset.tx = tx.toFixed(1); d.dataset.ty = ty.toFixed(1); d.dataset.rot = rot.toFixed(1);
+      requestAnimationFrame(function(){
+        d.style.transform = 'translate(' + tx + 'px,' + ty + 'px) rotate(' + rot + 'deg)';
+      });
+    });
+
+    later(function(){ if(!done) hint.innerHTML = '帮我拼回来'; }, 2800);
+    later(function(){ if(!done) autoSolve(); }, 24000);
+  }
+
+  var drag = null, sx = 0, sy = 0, ox = 0, oy = 0;
+
+  wrap.addEventListener('pointerdown', function(e){
+    var d = e.target && e.target.closest ? e.target.closest('.pz') : null;
+    if(!d || done || d.dataset.placed) return;
+    e.preventDefault();
+    e.stopPropagation();
+    drag = d;
+    d.style.transition = 'none';
+    sx = e.clientX; sy = e.clientY;
+    ox = parseFloat(d.dataset.tx) || 0;
+    oy = parseFloat(d.dataset.ty) || 0;
+    try{ d.setPointerCapture(e.pointerId); }catch(_){}
+  });
+
+  wrap.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    e.preventDefault();
+    var tx = ox + (e.clientX - sx);
+    var ty = oy + (e.clientY - sy);
+    drag.dataset.tx = tx.toFixed(1);
+    drag.dataset.ty = ty.toFixed(1);
+    drag.style.transform = 'translate(' + tx + 'px,' + ty + 'px) rotate(' + drag.dataset.rot + 'deg)';
+  });
+
+  function drop(){
+    if(!drag) return;
+    var d = drag; drag = null;
+    d.style.transition = '';
+    var tx = parseFloat(d.dataset.tx) || 0;
+    var ty = parseFloat(d.dataset.ty) || 0;
+    if(Math.sqrt(tx * tx + ty * ty) < 40) place(d);
+  }
+  wrap.addEventListener('pointerup', drop);
+  wrap.addEventListener('pointercancel', drop);
+
+  function place(d){
+    d.dataset.tx = '0'; d.dataset.ty = '0'; d.dataset.rot = '0';
+    d.dataset.placed = '1';
+    d.classList.add('ok');
+    d.style.transform = 'translate(0,0) rotate(0deg)';
+    if(pieces.length && pieces.every(function(p){ return p.dataset.placed; })) finish();
+  }
+
+  function autoSolve(){
+    var rest = pieces.filter(function(p){ return !p.dataset.placed; });
+    if(!rest.length) return;
+    hint.innerHTML = '算了，我来吧';
+    rest.forEach(function(p, i){ later(function(){ place(p); }, 260 * i); });
+  }
+
+  function finish(){
+    if(done) return;
+    done = true;
+    later(function(){
+      pieces.forEach(function(p){ p.remove(); });
+      pieces = [];
+      img.style.visibility = '';
+      wrap.classList.add('blink');
+      hint.innerHTML = '好了，这次能动了。';
+      later(function(){ if(window.__adv) window.__adv(); }, 1900);
+    }, 420);
+  }
+
+  img.addEventListener('pointerdown', function(e){
+    if(!armed || broken || done) return;
+    e.preventDefault();
+    e.stopPropagation();
+    shatter();
+  });
+
+  stage.addEventListener('pointerdown', guard, true);
+
+  var scheduled = false;
+  function schedule(){
+    if(scheduled || armed || broken || done) return;
+    scheduled = true;
+    later(arm, 7400);
+  }
+  var mo = new MutationObserver(function(){
+    if(sec.classList.contains('on')) schedule();
+  });
+  try{ mo.observe(sec, {attributes:true, attributeFilter:['class']}); }catch(_){}
+  if(sec.classList.contains('on')) schedule();
+})();
+</script>
+
 </body>
 </html>
+
