@@ -158,7 +158,8 @@
   @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.2vh)}}
 
   /* ---------- 小素龙 ---------- */
-  #s5{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:0 6vw}
+  #s5{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:0 6vw;text-align:center}
+  #s5 .l1{line-height:1.55}
   #s5 img{max-width:84vw;max-height:50vh;display:block;
     filter:drop-shadow(0 0 8vh rgba(255,111,165,.2))}
 
@@ -467,8 +468,8 @@
   <!-- 5 小素龙 -->
   <section id="s5">
     <img src="assets/web/s6.webp" alt="">
-    <p class="l1">我研究了一下小素龙。</p>
-    <p class="l2">现在变成了<br>一个不能动的粉色小土豆。</p>
+    <p class="l1">我研究了一下小素龙，<br>但好像搞砸了。</p>
+    <p class="l2">它现在变成了<br>一个不能动的粉色小土豆。</p>
   </section>
 
   <!-- 6 收束 -->
@@ -716,7 +717,7 @@ const MAIN_START = 2.0;
     if(id==='s5'){
       locked = true;
       var f5a = typeIn($('#s5 .l1'), 0.50, 0.185);
-      var f5b = typeIn($('#s5 .l2'), 2.10, 0.135);
+      var f5b = typeIn($('#s5 .l2'), 4.10, 0.115);
       later(()=>{ locked=false; tapcue.classList.add('on'); }, Math.max(f5a, f5b) * 1000 + 300);
       setDots(3);
     }
