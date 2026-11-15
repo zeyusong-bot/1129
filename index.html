@@ -165,11 +165,12 @@
   #s5 #mtwrap{position:relative;display:inline-block;line-height:0}
   #s5.broken{justify-content:flex-start;padding-top:6.5vh}
   #s5.broken .l1,#s5.broken .l2{display:none}
-  #s5 .pzhint{position:absolute;left:6vw;right:6vw;bottom:11vh;margin:0;text-align:center;
-    font-size:2.1vh;line-height:1.75;color:#ff9dc1;letter-spacing:.06em;
+  #s5 .pzhint{position:absolute;left:6vw;right:6vw;bottom:3.6vh;margin:0;text-align:center;
+    font-size:1.9vh;line-height:1.7;color:rgba(255,255,255,.42);letter-spacing:.22em;
     opacity:0;transition:opacity .6s ease;pointer-events:none}
   #s5 .pzhint.on{opacity:1}
-  #s5.broken .pzhint{bottom:2.2vh}
+  #s5.broken .pzhint{bottom:2.4vh;font-size:2.05vh;line-height:1.75;
+    color:#ff9dc1;letter-spacing:.06em}
   #s5.broken #dragon{max-width:82vw;max-height:40vh}
   #s5 .pz{position:absolute;background-repeat:no-repeat;border-radius:3px;
     box-shadow:0 .5vh 1.6vh rgba(0,0,0,.5);will-change:transform;touch-action:none;
@@ -424,6 +425,7 @@
     text-align:center;font-size:1.9vh;letter-spacing:.5em;color:rgba(255,255,255,.40);
     opacity:0;transition:opacity .5s ease;z-index:12;pointer-events:none}
   #tap.on{opacity:.95}
+  body.pz-run #tap{opacity:0!important}
   #bezel{position:absolute;inset:0;pointer-events:none;z-index:3;
     background:radial-gradient(ellipse at 50% 46%,transparent 52%,rgba(0,0,0,.55) 100%)}
   #ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:15;
@@ -1728,9 +1730,9 @@ const MAIN_START = 2.0;
 
   function guard(e){
     if(done) return;
-    if(!broken && !armed) return;        // 还没提示，按原来的点击推进
-    if(wrap.contains(e.target)) return;  // 点图片/碎片交给它们自己的 handler
-    e.stopPropagation();
+    if(!sec.classList.contains('on')) return;   // 只在这一幕里拦
+    if(wrap.contains(e.target)) return;         // 点图片/碎片交给它们自己的 handler
+    e.stopPropagation();                        // 其余点击一律不推进，防止绕过拼图
   }
 
   function shatter(){
@@ -1881,6 +1883,7 @@ const MAIN_START = 2.0;
   function finish(){
     if(done) return;
     done = true;
+    setRunning(false);
     later(function(){
       pieces.forEach(function(p){ p.remove(); });
       pieces = [];
@@ -1907,11 +1910,15 @@ const MAIN_START = 2.0;
     scheduled = true;
     later(arm, 7400);
   }
+  function setRunning(on){ try{ document.body.classList.toggle('pz-run', !!on); }catch(_){} }
+
   var mo = new MutationObserver(function(){
-    if(sec.classList.contains('on')) schedule();
+    var on = sec.classList.contains('on');
+    setRunning(on);
+    if(on) schedule();
   });
   try{ mo.observe(sec, {attributes:true, attributeFilter:['class']}); }catch(_){}
-  if(sec.classList.contains('on')) schedule();
+  if(sec.classList.contains('on')){ setRunning(true); schedule(); }
 })();
 </script>
 
