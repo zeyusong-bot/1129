@@ -498,7 +498,7 @@
 
   <!-- 5 小素龙 -->
   <section id="s5">
-    <div id="mtwrap"><div class="pzboard" id="pzboard"><img src="assets/web/s6sq.webp" alt=""></div><img id="dragon" src="assets/web/s6sq.webp" alt=""></div>
+    <div id="mtwrap"><div class="pzboard" id="pzboard"></div><img id="dragon" src="assets/web/s6sq.webp" alt=""></div>
     <p class="l1">我研究了一下小素龙，<br>但好像搞砸了。</p>
     <p class="l2">它现在变成了<br>一个不能动的粉色小土豆。</p>
     <p class="pzhint" id="pzhint"></p>
@@ -1767,28 +1767,38 @@ const MAIN_START = 2.0;
     }
 
     var vw = window.innerWidth, vh = window.innerHeight;
-    var trayTop = r.bottom + 14;
+    var trayTop = r.bottom + 24;
     var trayH = Math.max(ph * 1.2, vh - 88 - trayTop);
     var colStep = (vw - 16 - pw) / Math.max(1, COLS - 1);
     var rowStep = (trayH - 12 - ph) / Math.max(1, ROWS - 1);
 
+    // 托盘位置打乱：每片随机落在一个格位
+    var slots = [];
+    for(var s = 0; s < COLS * ROWS; s++) slots.push(s);
+    for(var k = slots.length - 1; k > 0; k--){
+      var j = Math.floor(Math.random() * (k + 1));
+      var tmp = slots[k]; slots[k] = slots[j]; slots[j] = tmp;
+    }
+
     pieces.forEach(function(d, i){
-      var col = i % COLS, row = Math.floor(i / COLS);
+      var slot = slots[i];
+      var col = slot % COLS, row = Math.floor(slot / COLS);
       var jx = (Math.random() * 2 - 1) * 5;
       var jy = (Math.random() * 2 - 1) * 5;
       var wantLeft = 8 + col * colStep + jx;
       var wantTop  = trayTop + 6 + row * rowStep + jy;
       var rot = (Math.random() * 2 - 1) * 14;
 
-      var homeLeft = r.left + col * pw;
-      var homeTop  = r.top + row * ph;
+      var homeLeft = r.left + parseInt(d.dataset.px, 10) * pw;
+      var homeTop  = r.top + parseInt(d.dataset.py, 10) * ph;
       var tx = wantLeft - homeLeft;
       var ty = wantTop - homeTop;
 
       // 别飞出屏幕
       var b0 = d.getBoundingClientRect();
-      var minTx = 8 - b0.left, maxTx = vw - b0.right - 8;
-      var minTy = 8 - b0.top, maxTy = vh - b0.bottom - 8;
+      var pad = 16;
+      var minTx = pad - b0.left, maxTx = vw - b0.right - pad;
+      var minTy = pad - b0.top, maxTy = vh - b0.bottom - pad;
       if(tx < minTx) tx = minTx;
       if(tx > maxTx) tx = maxTx;
       if(ty < minTy) ty = minTy;
