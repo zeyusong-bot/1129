@@ -163,7 +163,7 @@
   #s5 img{max-width:88vw;max-height:52vh;display:block;
     filter:drop-shadow(0 0 8vh rgba(255,111,165,.2))}
   #s5 #mtwrap{position:relative;display:inline-block;line-height:0}
-  #s5.broken{justify-content:flex-start;padding-top:6.5vh}
+  #s5.broken{justify-content:flex-start;padding-top:8.8vh}
   #s5.broken .l1,#s5.broken .l2{display:none}
   #s5 .pzhint{position:absolute;left:6vw;right:6vw;bottom:3.6vh;margin:0;text-align:center;
     font-size:1.9vh;line-height:1.7;color:rgba(255,255,255,.42);letter-spacing:.22em;
@@ -171,7 +171,14 @@
   #s5 .pzhint.on{opacity:1}
   #s5.broken .pzhint{bottom:2.4vh;font-size:2.05vh;line-height:1.75;
     color:#ff9dc1;letter-spacing:.06em}
-  #s5.broken #dragon{max-width:82vw;max-height:40vh}
+  #s5.broken #dragon{max-width:82vw;max-height:37vh}
+  #s5 #mtwrap .pztimer{position:absolute;right:0;top:-4.2vh;
+    font-size:1.75vh;line-height:1;letter-spacing:.06em;white-space:nowrap;
+    color:rgba(255,214,230,.62);opacity:0;transition:opacity .45s ease;pointer-events:none}
+  #s5.broken #mtwrap .pztimer{opacity:1}
+  #s5.solved #mtwrap .pztimer{opacity:0}
+  #s5 .pzhint .pzsub{display:inline-block;margin-top:.9vh;font-size:.82em;
+    color:rgba(255,214,230,.48);letter-spacing:.08em}
   #s5 .pz{position:absolute;background-repeat:no-repeat;border-radius:3px;
     box-shadow:0 .5vh 1.6vh rgba(0,0,0,.5);will-change:transform;touch-action:none;
     transition:transform .6s cubic-bezier(.2,.9,.3,1)}
@@ -500,7 +507,7 @@
 
   <!-- 5 小素龙 -->
   <section id="s5">
-    <div id="mtwrap"><div class="pzboard" id="pzboard"></div><img id="dragon" src="assets/web/s6sq.webp" alt=""></div>
+    <div id="mtwrap"><div class="pzboard" id="pzboard"></div><img id="dragon" src="assets/web/s6sq.webp" alt=""><span class="pztimer" id="pztimer"></span></div>
     <p class="l1">我研究了一下小素龙，<br>但好像搞砸了。</p>
     <p class="l2">它现在变成了<br>一个不能动的粉色小土豆。</p>
     <p class="pzhint" id="pzhint"></p>
@@ -1707,6 +1714,23 @@ const MAIN_START = 2.0;
   var wrap = document.getElementById('mtwrap');
   var img = document.getElementById('dragon');
   var hint = document.getElementById('pzhint');
+  var timerEl = document.getElementById('pztimer');
+  var t0 = 0, ticker = null;
+  function startTick(){
+    if(ticker) return;
+    t0 = Date.now();
+    timerEl.textContent = '0 秒';
+    ticker = setInterval(function(){
+      timerEl.textContent = Math.round((Date.now() - t0) / 1000) + ' 秒';
+    }, 200);
+  }
+  function stopTick(){ if(ticker){ clearInterval(ticker); ticker = null; } }
+  function tierText(s){
+    if(s <= 11) return '厉害，超过我了';
+    if(s <= 15) return '再加把油，还差一点';
+    if(s <= 20) return '还是不够快呦';
+    return '手有点慢喽，我只用了十一秒';
+  }
   var stage = document.getElementById('stage');
   if(!sec || !wrap || !img || !hint || !stage) return;
 
@@ -1740,6 +1764,8 @@ const MAIN_START = 2.0;
   function shatter(){
     if(broken || done) return;
     broken = true; armed = false;
+    stopTick(); t0 = 0;
+    if(timerEl) timerEl.textContent = '';
     img.classList.remove('ptap');
     sec.classList.add('broken');
     img.style.visibility = 'hidden';
@@ -1826,6 +1852,7 @@ const MAIN_START = 2.0;
     e.preventDefault();
     e.stopPropagation();
     drag = d;
+    if(!t0) startTick();          // 从第一块被拖起来才开始计时
     d.style.transition = 'none';
     d.classList.add('drag');
     d.dataset.rot0 = d.dataset.rot || '0';
@@ -1885,6 +1912,8 @@ const MAIN_START = 2.0;
   function finish(){
     if(done) return;
     done = true;
+    var secs = t0 ? Math.round((Date.now() - t0) / 1000) : -1;
+    stopTick();
     setRunning(false);
     later(function(){
       pieces.forEach(function(p){ p.remove(); });
@@ -1892,8 +1921,13 @@ const MAIN_START = 2.0;
       sec.classList.add('solved');
       img.style.visibility = '';
       wrap.classList.add('blink');
-      hint.innerHTML = '好了，这次能动了。';
-      later(function(){ if(window.__adv) window.__adv(); }, 1900);
+      if(secs >= 0){
+        hint.innerHTML = secs + ' 秒 · ' + tierText(secs) +
+                         '<br><span class="pzsub">好了，这次能动了。</span>';
+      }else{
+        hint.innerHTML = '好了，这次能动了。';
+      }
+      later(function(){ if(window.__adv) window.__adv(); }, 2400);
     }, 420);
   }
 
