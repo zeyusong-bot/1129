@@ -616,6 +616,26 @@ const MAIN_START = 2.0;
   };
   Object.values(A).forEach(a=>{ a.preload='auto'; });
   A.main.volume = 0.9; A.piano.volume = 0.0; A.vox.volume = 0.95; A.end.volume = 0.0;
+  // 生日歌 / 结尾曲允许循环，免得她停太久放空了
+  A.piano.loop = true;
+  A.end.loop = true;
+  // 主曲 main_a 只有 82 秒（从 2.0s 起算约 80 秒）。她在前面磨蹭太久时，
+  // 在还剩 1.4 秒时把它接回 2.0s 处并淡入，听感上是一段无缝的循环。
+  A.main.addEventListener('timeupdate', function(){
+    try{
+      if(endingOn) return;
+      var cur = ORDER[at];
+      if(cur === 's8' || cur === 's9') return;
+      var d = A.main.duration;
+      if(!isFinite(d) || d <= 0) return;
+      if(d - A.main.currentTime < 1.4){
+        A.main.currentTime = MAIN_START;
+        A.main.volume = 0;
+        play(A.main);
+        fade(A.main, 0, 0.85, 1400);
+      }
+    }catch(_){}
+  });
   function play(el){ const p = el.play(); if(p&&p.catch) p.catch(()=>{}); }
   function fade(el, from, to, ms){
     const t0 = performance.now();
