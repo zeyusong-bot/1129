@@ -843,6 +843,11 @@ const MAIN_START = 2.0;
       typeIn($('#s9 .who'), 0.55, 0.230);
       typeIn($('#s9 .fin'), 2.20, 0.140);
       setDots(6);
+      // 最后一颗流星划过之后，给一个「轻 点 一 下」的接手提示
+      later(function(){
+        var wb = document.getElementById('wishbox');
+        if(wb && !wb.classList.contains('on')) cue('轻 点 一 下');
+      }, 5700);
     }
   }
 
@@ -1088,7 +1093,12 @@ const MAIN_START = 2.0;
     if(cur==='s8'){ blowScene(); return; }
     const idx = ORDER.indexOf(cur);
     if(idx < 0) return;
-    if(cur==='s9') return;
+    if(cur==='s9'){
+      // 落版点一下：提前叫出写愿望区（不点也会有 11.5s 的兜底自动出现）
+      if(window.__armWish){ window.__armWish(); }
+      tapcue.classList.remove('on');
+      return;
+    }
     go(idx+1);
   }
 
@@ -1640,20 +1650,32 @@ const MAIN_START = 2.0;
     }, true);
   }
 
+  var armTimer = null, boxShown = false;
+  function showBox(){
+    if(boxShown) return;
+    boxShown = true;
+    var __tc = document.getElementById('tap'); if(__tc) __tc.classList.remove('on');
+    var a = renderAll(true);
+    if(a.length){
+      tip.innerHTML = '你写过 ' + a.length + ' 个愿望<br>都还挂在天上';
+      inp.setAttribute('placeholder', '再写一句？');
+      var sc = document.getElementById('starcue');
+      if(sc) sc.classList.add('on');
+    }
+    box.classList.add('on');
+  }
   function arm(){
     if(armed) return;
     armed = true;
-    setTimeout(function(){
-      var a = renderAll(true);
-      if(a.length){
-        tip.innerHTML = '你写过 ' + a.length + ' 个愿望<br>都还挂在天上';
-        inp.setAttribute('placeholder', '再写一句？');
-        var cue = document.getElementById('starcue');
-        if(cue) cue.classList.add('on');
-      }
-      box.classList.add('on');
-    }, 11500);
+    armTimer = setTimeout(showBox, 11500);
   }
+  // 落版点一下：立刻叫出写愿望区（不点则 11.5s 后自动出现，兜底）
+  window.__armWish = function(){
+    if(boxShown) return;
+    armed = true;
+    if(armTimer){ clearTimeout(armTimer); armTimer = null; }
+    showBox();
+  };
 
   inp.addEventListener('focus', function(){ box.classList.add('focus'); s9.classList.add('focusing'); });
   inp.addEventListener('blur',  function(){ box.classList.remove('focus'); s9.classList.remove('focusing'); });
