@@ -471,11 +471,11 @@
 
   <!-- 0 密码门 -->
   <section id="gate" class="on">
-    <h1>今天是几月几号？</h1>
+    <h1>输入四位密码。</h1>
     <div class="field">
-      <input id="ans" inputmode="numeric" autocomplete="off">
+      <input id="ans" inputmode="numeric" autocomplete="off" maxlength="4">
       <button id="go">进 去</button>
-      <div id="hint">月份点日期，像 3.7 这样</div>
+      <div id="hint">提示：你的生日</div>
     </div>
   </section>
 
@@ -585,6 +585,7 @@
   };
   // ====== 配置：她的生日（月 / 日）======
   const BIRTH = { m: 11, d: 29 };
+  const PASS = '1129';
 // 主曲从第几秒开始播：原曲 0-1.5s 是静音、2s 才起伴奏、约 9s 人声进
 const MAIN_START = 2.0;
   const TOTAL_STEPS = 7;
@@ -1192,11 +1193,11 @@ const MAIN_START = 2.0;
   }
 
   function tryUnlock(){
-    const got = parseMD($('#ans').value);
-    if(got && ((got.m===BIRTH.m && got.d===BIRTH.d) || (got.m===BIRTH.d && got.d===BIRTH.m))){ unlock(); return; }
+    const digits = norm($('#ans').value).replace(/[^0-9]/g, '');
+    if(digits === PASS){ unlock(); return; }
     tries++;
-    if(tries===1) say('不对，是你生日那天。');
-    else if(tries===2) say('提示：每年都要过的那天。');
+    if(tries===1) say('不对，再想想。');
+    else if(tries===2) say('提示：四位，你的生日。');
     else { say('算了，进来吧。'); later(unlock, 900); }
   }
   $('#ans').addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
